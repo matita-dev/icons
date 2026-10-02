@@ -130,12 +130,22 @@ const cell = n => `<div class="cell">${toSvg(icons[n], { size: 24 })}<span class
 const sizes = [14, 16, 18, 24, 32].map(s => `<div class="size">${toSvg(icons['drafting-compass'], { size: s })}<span class="lbl">${s}</span></div>`).join('');
 const blues = ['crosshair', 'ruler', 'set-square', 'layers'].map(n => toSvg(icons[n], { size: 20, pencil: true })).join('');
 const pencilCss = (await readFile(src('pencil.css'), 'utf8')).replace(/\/\*[\s\S]*?\*\/\s*/, '').trim();
+/* Geist Mono (SIL OFL 1.1), self-hosted from @fontsource; the license text ships beside the font files */
+const fontPkg = join(root, 'node_modules/@fontsource/geist-mono');
+await mkdir(join(root, 'preview/fonts'), { recursive: true });
+for (const w of [400, 500]) {
+  const f = `geist-mono-latin-${w}-normal.woff2`;
+  await copyFile(join(fontPkg, 'files', f), join(root, 'preview/fonts', f));
+}
+await copyFile(join(fontPkg, 'LICENSE'), join(root, 'preview/fonts/OFL.txt'));
 await write(join(root, 'preview/index.html'), `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Matita icons</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-mono-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+@font-face{font-family:'Geist Mono';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/geist-mono-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Geist Mono';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/geist-mono-latin-500-normal.woff2) format('woff2')}
 :root{--paper-1:#F6F4EE;--ink-1:#14161B;--ink-2:#353941;--ink-3:#5E626B;--blue-500:#2748F5;
 --line-1:rgba(20,22,27,.22);--line-2:rgba(20,22,27,.14);--surface-page:var(--paper-1);--text-body:var(--ink-2);
 --font-mono:'Geist Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;--fw-regular:400;--fw-medium:500;--tracking-label:.08em;
