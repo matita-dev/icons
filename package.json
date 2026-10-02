@@ -1,0 +1,92 @@
+{
+  "name": "@matita/icons",
+  "version": "0.1.0",
+  "description": "Freehand pencil icons for the web: ruled strokes that overshoot, crossed corners, circles that overlap where the pen closes.",
+  "license": "MIT",
+  "homepage": "https://matita.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matita-dev/icons.git"
+  },
+  "bugs": {
+    "url": "https://github.com/matita-dev/icons/issues"
+  },
+  "author": "Matita <hello@matita.dev> (https://matita.dev)",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "main": "./dist/esm/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "react": [
+        "./dist/react/index.d.ts"
+      ],
+      "engine": [
+        "./dist/esm/engine.d.ts"
+      ]
+    }
+  },
+  "unpkg": "./dist/umd/sketch-icons.min.js",
+  "jsdelivr": "./dist/umd/sketch-icons.min.js",
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "default": "./dist/esm/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "default": "./dist/react/index.js"
+    },
+    "./engine": {
+      "types": "./dist/esm/engine.d.ts",
+      "default": "./dist/esm/engine.js"
+    },
+    "./icons/*.svg": "./dist/svg/*.svg",
+    "./pencil/*.svg": "./dist/svg-pencil/*.svg",
+    "./sprite.svg": "./dist/sprite.svg",
+    "./icons.json": "./dist/icons.json",
+    "./pencil.css": "./dist/pencil.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "icons",
+    "svg",
+    "sketch",
+    "hand-drawn",
+    "pencil",
+    "freehand",
+    "react",
+    "matita"
+  ],
+  "scripts": {
+    "lint:icons": "node scripts/lint.mjs",
+    "build": "node scripts/lint.mjs && node scripts/build.mjs",
+    "test": "node --test",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "peerDependencies": {
+    "react": ">=17"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
