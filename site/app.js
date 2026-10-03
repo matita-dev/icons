@@ -231,6 +231,17 @@ for (const tabs of $$('[data-tabs]')) {
   show(list.find(t => t.getAttribute('aria-selected') === 'true') || list[0]);
 }
 
+/* ---------- hero specimen: a random one per visit (the page ships the first) ---------- */
+{
+  const all = JSON.parse($('#specimens').textContent);
+  const s = all[Math.floor(Math.random() * all.length)];
+  $('#spec-svg').setAttribute('aria-label', s.label);
+  $('#spec-glyph').innerHTML = s.glyph;
+  $('#spec-notes').innerHTML = s.notes;
+  $('#spec-name').textContent = s.name;
+  $('#spec-legend').innerHTML = s.legend;
+}
+
 /* ---------- start ---------- */
 syncSheet();
 select(state.selected, false);
