@@ -34,8 +34,10 @@ Then run:
 
 ```sh
 npm ci
-npm run build   # lints the sources, builds dist/ and preview/index.html
+npm ci --prefix site   # once: the site's own dependencies
+npm run build          # lints the sources and builds dist/
 npm test
+npm run preview        # builds preview/index.html from your local dist/
 ```
 
 `npm run build` fails if a glyph uses an unknown primitive, has the wrong number of arguments,

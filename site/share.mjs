@@ -1,10 +1,9 @@
-/* matita.dev — favicons and the social share image, rasterised at build time. Called from site.mjs.
+/* matita.dev — favicons and the social share image, rasterised at build time. Called from build.mjs.
    Writes favicon.svg (follows the browser's dark mode), favicon.ico, apple-touch-icon.png and og.png. */
 import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { inflateSync } from 'node:zlib';
-import { toSvg, toSvgInner } from '../src/render.js';
 
 const C = { paper: '#F6F4EE', sheet: '#FBFAF6', ink1: '#14161B', ink3: '#5A5E67', blue: '#2748F5', red: '#C93A2A', green: '#1E7A46' };
 
@@ -48,7 +47,7 @@ function paper(w, h, step) {
   return s;
 }
 
-export async function buildShare({ root, write, icons, n }) {
+export async function buildShare({ root, write, icons, toSvg, toSvgInner, n }) {
   const { Resvg } = await import('@resvg/resvg-js');
   const tmp = await mkdtemp(join(tmpdir(), 'matita-fonts-'));
   try {

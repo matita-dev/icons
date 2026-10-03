@@ -1,0 +1,24 @@
+{
+  "name": "matita-site",
+  "private": true,
+  "description": "matita.dev, built from the published @matita/icons package.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "build:local": "node build.mjs --local"
+  },
+  "dependencies": {
+    "@matita/icons": "0.1.2"
+  },
+  "devDependencies": {
+    "@fontsource/geist-mono": "^5.3.0",
+    "@fontsource/geist-sans": "^5.3.0",
+    "@fontsource/instrument-serif": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "esbuild": "^0.25.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,9 +1,24 @@
-/* matita.dev — static site generator. Called from build.mjs; writes preview/ (served by Cloudflare).
-   The icon grid is rendered here so the page reads without JavaScript; site/app.js adds search, controls and copy. */
+#!/usr/bin/env node
+/* matita.dev — static site generator. Writes ../preview/ (served by Cloudflare).
+   Draws everything with the published @matita/icons from npm, pinned in site/package.json, so the site shows exactly
+   what users install. `--local` uses the repo's own build (../dist) instead, for checking unreleased glyphs.
+   The icon grid is rendered here so the page reads without JavaScript; app.js adds search, controls and copy. */
 import { mkdir, rm, writeFile, readFile, copyFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
-import { toSvg, toSvgInner, pascal } from '../src/render.js';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { buildShare } from './share.mjs';
+
+const here = dirname(fileURLToPath(import.meta.url)), repo = join(here, '..');
+const LOCAL = process.argv.includes('--local');
+const pkgDir = LOCAL ? repo : dirname(createRequire(import.meta.url).resolve('@matita/icons/package.json'));
+const entry = { '': 'dist/esm/index.js', '/engine': 'dist/esm/engine.js' };
+const load = sub => import(pathToFileURL(join(pkgDir, entry[sub])).href);
+
+const pkg = JSON.parse(await readFile(join(pkgDir, 'package.json'), 'utf8'));
+const { icons, names, toSvg, toSvgInner } = await load('');
+const { DEFS, drawIcon } = await load('/engine');
+const pascal = n => String(n).replace(/(^|-)([a-z0-9])/g, (_, __, c) => c.toUpperCase());
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
@@ -53,15 +68,15 @@ const code = (id, text, label = 'Copy') =>
 
 const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${num}</span><span class="eyebrow-dash" aria-hidden="true"></span>${text}</p>`;
 
-export async function buildSite({ root, pkg, names, icons, DEFS, drawIcon }) {
-  const out = p => join(root, 'preview', p);
+{
+  const out = p => join(repo, 'preview', p);
   const write = async (p, s) => { await mkdir(dirname(out(p)), { recursive: true }); await writeFile(out(p), s); };
-  await rm(join(root, 'preview'), { recursive: true, force: true });
+  await rm(join(repo, 'preview'), { recursive: true, force: true });
 
   /* fonts + licenses */
   const faces = [];
   for (const f of FONTS) {
-    const dir = join(root, 'node_modules/@fontsource', f.pkg);
+    const dir = join(here, 'node_modules/@fontsource', f.pkg);
     for (const [w, style] of f.files) {
       const file = `${f.pkg}-latin-${w}-${style}.woff2`;
       await mkdir(out('fonts'), { recursive: true });
@@ -73,17 +88,19 @@ export async function buildSite({ root, pkg, names, icons, DEFS, drawIcon }) {
 
   /* styles: fonts + site + the package's own pencil grain */
   const esbuild = await import('esbuild');
-  const css = faces.join('\n') + '\n' + await readFile(join(root, 'site/site.css'), 'utf8') + '\n' + await readFile(join(root, 'src/pencil.css'), 'utf8');
+  const css = faces.join('\n') + '\n' + await readFile(join(here, 'site.css'), 'utf8') + '\n' + await readFile(join(pkgDir, 'dist/pencil.css'), 'utf8');
   await write('site.css', (await esbuild.transform(css, { loader: 'css', minify: true })).code);
 
-  /* behaviour: bundles the same engine + renderer the package ships, so the browser draws identical icons */
+  /* behaviour: bundles the package's engine + renderer, so the browser draws identical icons.
+     @matita/icons resolves to the same package the page was rendered with (npm, or ../dist with --local). */
+  const matita = { name: 'matita', setup: b => b.onResolve({ filter: /^@matita\/icons(\/engine)?$/ }, a => ({ path: join(pkgDir, entry[a.path.slice('@matita/icons'.length)]) })) };
   await esbuild.build({
-    entryPoints: [join(root, 'site/app.js')], bundle: true, minify: true, format: 'iife', target: 'es2019',
-    outfile: out('app.js'), logLevel: 'warning'
+    entryPoints: [join(here, 'app.js')], bundle: true, minify: true, format: 'iife', target: 'es2019',
+    outfile: out('app.js'), logLevel: 'warning', plugins: [matita]
   });
 
   const n = names.length;
-  await buildShare({ root, write, icons, n });
+  await buildShare({ root: here, write, icons, toSvg, toSvgInner, n });
   const ico = (name, size, extra = '') => `<span class="ico" data-icon="${name}" data-size="${size}"${extra}>${toSvg(icons[name], { size })}</span>`;
 
   /* hero specimen: "image" shows all three habits — crossed corners, pen overlap, overshoot */
@@ -431,4 +448,5 @@ import { Ruler } from '@matita/icons/react';
 `;
   /* links that leave the site open in a new tab */
   await write('index.html', html.replace(/<a ([^>]*?)href="(https?:\/\/[^"]+)"/g, '<a $1href="$2" target="_blank" rel="noopener"'));
+  console.log(`site built with ${pkg.name}@${pkg.version}${LOCAL ? ' (local ../dist)' : ''}, ${n} icons`);
 }

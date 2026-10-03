@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /* Builds every distributable from src/defs.js:
-   dist/svg · dist/svg-pencil · dist/sprite.svg · dist/icons.json · dist/esm · dist/react · dist/umd · dist/pencil.css · preview/ (the matita.dev site, see scripts/site.mjs) */
+   dist/svg · dist/svg-pencil · dist/sprite.svg · dist/icons.json · dist/esm · dist/react · dist/umd · dist/pencil.css
+   The matita.dev site is a separate project in site/ that builds from the published package. */
 import { mkdir, rm, writeFile, readFile, copyFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DEFS, drawIcon } from '../src/sketchify.js';
 import { toSvg, toSvgInner, pascal } from '../src/render.js';
-import { buildSite } from './site.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const src = p => join(root, 'src', p), dist = p => join(root, 'dist', p);
@@ -125,8 +125,5 @@ await esbuild.build({
   entryPoints: [dist('esm/index.js')], bundle: true, minify: true, format: 'iife', globalName: 'SketchIcons',
   outfile: dist('umd/sketch-icons.min.js'), banner: { js: banner.trim() }, logLevel: 'warning'
 });
-
-/* matita.dev — the docs site, served from preview/ */
-await buildSite({ root, pkg, names, icons, DEFS, drawIcon });
 
 console.log(`built ${names.length} icons`);

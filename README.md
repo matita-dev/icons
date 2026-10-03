@@ -48,8 +48,16 @@ Keep to 2–5 primitives, stay inside the 1–23 grid, no fills, short descripti
 
 ```sh
 npm ci
-npm run build   # lint + dist + preview/index.html
+npm run build   # lint + dist
 npm test
+```
+
+The site (matita.dev) lives in `site/` as its own project and is built from the published package on npm:
+
+```sh
+npm ci --prefix site
+npm --prefix site run build   # preview/ from the @matita/icons version pinned in site/package.json
+npm run preview               # or: build dist/, then the site from it, to check unreleased glyphs
 ```
 
 ## License

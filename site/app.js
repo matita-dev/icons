@@ -1,7 +1,8 @@
-/* matita.dev behaviour. Uses the package's own engine + renderer, so what you copy is exactly what you see. */
-import { DEFS, drawIcon } from '../src/sketchify.js';
-import { toSvg, pascal } from '../src/render.js';
+/* matita.dev behaviour. Uses the published package's engine + renderer, so what you copy is exactly what you see. */
+import { DEFS, drawIcon } from '@matita/icons/engine';
+import { toSvg } from '@matita/icons';
 
+const pascal = n => String(n).replace(/(^|-)([a-z0-9])/g, (_, __, c) => c.toUpperCase());
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const names = Object.keys(DEFS);
