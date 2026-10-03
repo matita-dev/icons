@@ -103,14 +103,66 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
   await buildShare({ root: here, write, icons, toSvg, toSvgInner, n });
   const ico = (name, size, extra = '') => `<span class="ico" data-icon="${name}" data-size="${size}"${extra}>${toSvg(icons[name], { size })}</span>`;
 
-  /* hero specimen: "image" shows all three habits — crossed corners, pen overlap, overshoot */
-  const spec = icons.image;
+  /* hero specimens: each annotates three of the engine's habits on one glyph. The first is rendered into the page;
+     app.js shows a random one on load. A note points at a fixed grid point, or at a drawn stroke ([stroke, where]):
+     'first' / 'last' is where the pen starts / lifts, 'close' is where a ring's pen passes over its own start. */
+  const SPECIMENS = [
+    ['image', [
+      ['Boxes cross at the corners', [3.5, 5], [.4, 1.8]],
+      ['Circles overlap where the pen closes', [1, 'close'], [13.6, 1.8]],
+      ['Strokes run past their ends', [2, 'first'], [.4, 22.4]]]],
+    ['calendar', [
+      ['Boxes cross at the corners', [20, 20.5], [23.6, 23.4]],
+      ['Ruled lines run past the box', [1, 'last'], [23.6, 13.6]],
+      ['Even short ticks overshoot', [2, 'first'], [4.4, .4]]]],
+    ['clock', [
+      ['Circles overlap where the pen closes', [0, 'close'], [.4, 1.8]],
+      ['Joints stay sharp', [12, 12], [.4, 22.4]],
+      ['Open ends run past the point', [1, 'last'], [23.6, 20.4]]]],
+    ['folder', [
+      ['Closed shapes run past their start', [0, 'last'], [7.6, .4]],
+      ['Corners stay sharp', [11.5, 8], [16.4, 2.2]],
+      ['Every edge bows a little', [12, 18.5], [15.6, 23.4]]]],
+    ['search', [
+      ['Circles overlap where the pen closes', [0, 'close'], [.4, 1.8]],
+      ['Joins overlap instead of meeting', [1, 'first'], [23.6, 9.6]],
+      ['Strokes run past their ends', [1, 'last'], [16.4, 23.4]]]],
+    ['info', [
+      ['Circles overlap where the pen closes', [0, 'close'], [23.6, 1.8]],
+      ['Dots are a single tap of the pen', [12, 7.8], [.4, 1.8]],
+      ['Strokes run past their ends', [1, 'last'], [.4, 22.4]]]],
+    ['eye', [
+      ['Curves cross where they meet', [2.5, 12], [.4, 5.6]],
+      ['Circles overlap where the pen closes', [2, 'close'], [23.6, 1.8]],
+      ['Every curve runs past its end', [1, 'first'], [23.6, 18.4]]]]
+  ];
+  const strokePts = d => { const v = d.match(/-?\d*\.?\d+/g).map(Number), P = []; for (let i = 0; i + 1 < v.length; i += 2) P.push([v[i], v[i + 1]]); return P; };
+  const noteAt = (name, at) => {
+    if (typeof at[1] === 'number') return at;
+    const [i, where] = at, P = strokePts(icons[name].ink[i][0]);
+    if (where === 'first') return P[0];
+    if (where === 'last') return P.at(-1);
+    /* ring: halfway between the start angle and where the overrun ends, on the plotted radius */
+    const [cx, cy, R] = DEFS[name].split(';').filter(p => p.trim()[0] !== 'O')[i].trim().slice(1).trim().split(/\s+/).map(Number);
+    const ang = p => Math.atan2(p[1] - cy, p[0] - cx), a0 = ang(P[0]), sweep = ((ang(P.at(-1)) - a0) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+    return [cx + Math.cos(a0 + sweep / 2) * R, cy + Math.sin(a0 + sweep / 2) * R];
+  };
+  const r2 = n => +n.toFixed(2);
+  const NOTE_CLS = ['c-red', 'c-blue', 'c-green'];
   const callout = (x, y, tx, ty, label, cls) =>
-    `<line class="leader ${cls}" x1="${x}" y1="${y}" x2="${tx}" y2="${ty}"/><circle class="marker ${cls}" cx="${x}" cy="${y}" r="1.05"/><text class="marker-t ${cls}" x="${x}" y="${y + .38}" text-anchor="middle">${label}</text>`;
-  const specimen = `<svg class="specimen" viewBox="-2 -2 28 28" role="img" aria-label="The image icon drawn large on its 24 unit grid">
+    `<line class="leader ${cls}" x1="${x}" y1="${y}" x2="${r2(tx)}" y2="${r2(ty)}"/><circle class="marker ${cls}" cx="${x}" cy="${y}" r="1.05"/><text class="marker-t ${cls}" x="${x}" y="${r2(y + .38)}" text-anchor="middle">${label}</text>`;
+  const specimens = SPECIMENS.map(([name, notes]) => ({
+    name,
+    label: `The ${name} icon drawn large on its 24 unit grid`,
+    glyph: toSvgInner(icons[name], { strokeWidth: .62 }).replace(/<path /g, '<path pathLength="1" '),
+    notes: notes.map(([, at, [x, y]], i) => callout(x, y, ...noteAt(name, at), i + 1, NOTE_CLS[i])).join(''),
+    legend: notes.map(([text], i) => `<li><span class="legend-n ${NOTE_CLS[i]}">${i + 1}</span>${esc(text)}</li>`).join('')
+  }));
+  const spec = specimens[0];
+  const specimen = `<svg class="specimen" id="spec-svg" viewBox="-2 -2 28 28" role="img" aria-label="${spec.label}">
   <g class="grid" aria-hidden="true">${gridLines()}</g>
-  <g class="glyph" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${toSvgInner(spec, { strokeWidth: .62 }).replace(/<path /g, '<path pathLength="1" ')}</g>
-  <g aria-hidden="true">${callout(.4, 1.8, 3, 4.4, '1', 'c-red')}${callout(13.6, 1.8, 10.2, 8.3, '2', 'c-blue')}${callout(.4, 22.4, 3.4, 17.6, '3', 'c-green')}</g>
+  <g class="glyph" id="spec-glyph" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${spec.glyph}</g>
+  <g id="spec-notes" aria-hidden="true">${spec.notes}</g>
 </svg>`;
 
   /* icon grid, server-rendered at the default size */
@@ -191,15 +243,12 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
     </div>
     <div class="hero-fig">
       <figure class="frame">
-        <figcaption class="frame-cap"><span>Fig. 01 · Specimen</span><span class="frame-rule" aria-hidden="true"></span><span>image</span></figcaption>
+        <figcaption class="frame-cap"><span>Fig. 01 · Specimen</span><span class="frame-rule" aria-hidden="true"></span><span id="spec-name">${spec.name}</span></figcaption>
         ${specimen}
       </figure>
       <div class="dim" aria-hidden="true"><span class="dim-line"></span><span class="dim-label">24 units</span><span class="dim-line"></span></div>
-      <ol class="legend">
-        <li><span class="legend-n c-red">1</span>Boxes cross at the corners</li>
-        <li><span class="legend-n c-blue">2</span>Circles overlap where the pen closes</li>
-        <li><span class="legend-n c-green">3</span>Strokes run past their ends</li>
-      </ol>
+      <ol class="legend" id="spec-legend">${spec.legend}</ol>
+      <script type="application/json" id="specimens">${JSON.stringify(specimens).replace(/</g, '\\u003c')}</script>
     </div>
   </div>
 </section>
