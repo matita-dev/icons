@@ -205,14 +205,6 @@ for (const b of $$('[data-fmt]')) b.addEventListener('click', () => {
 });
 $('#d-copy').addEventListener('click', e => copy(snippets(state.selected)[state.fmt], { react: 'React snippet', js: 'JavaScript snippet', svg: 'SVG' }[state.fmt], e.currentTarget));
 $('#d-copy-name').addEventListener('click', e => copy(state.selected, `name ${state.selected}`, e.currentTarget));
-$('#d-download').addEventListener('click', () => {
-  const svg = snippets(state.selected).svg + '\n';
-  const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
-  const a = Object.assign(document.createElement('a'), { href: url, download: `${state.selected}${state.pencil ? '-pencil' : ''}.svg` });
-  document.body.append(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  announce(`Downloaded ${state.selected}.svg`);
-});
 
 /* ---------- tabs ---------- */
 for (const tabs of $$('[data-tabs]')) {

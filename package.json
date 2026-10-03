@@ -1,6 +1,6 @@
 {
   "name": "@matita/icons",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Freehand pencil icons for the web: ruled strokes that overshoot, crossed corners, circles that overlap where the pen closes.",
   "license": "MIT",
   "homepage": "https://matita.dev",
@@ -85,6 +85,7 @@
     "@fontsource/geist-mono": "^5.3.0",
     "@fontsource/geist-sans": "^5.3.0",
     "@fontsource/instrument-serif": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
     "esbuild": "^0.25.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

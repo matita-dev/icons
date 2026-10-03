@@ -3,6 +3,7 @@
 import { mkdir, rm, writeFile, readFile, copyFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { toSvg, toSvgInner, pascal } from '../src/render.js';
+import { buildShare } from './share.mjs';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
@@ -81,9 +82,8 @@ export async function buildSite({ root, pkg, names, icons, DEFS, drawIcon }) {
     outfile: out('app.js'), logLevel: 'warning'
   });
 
-  await write('favicon.svg', toSvg(icons.pencil, { size: 32, color: '#14161B', strokeWidth: 1.9 }) + '\n');
-
   const n = names.length;
+  await buildShare({ root, write, icons, n });
   const ico = (name, size, extra = '') => `<span class="ico" data-icon="${name}" data-size="${size}"${extra}>${toSvg(icons[name], { size })}</span>`;
 
   /* hero specimen: "image" shows all three habits — crossed corners, pen overlap, overshoot */
@@ -120,8 +120,17 @@ export async function buildSite({ root, pkg, names, icons, DEFS, drawIcon }) {
 <meta property="og:description" content="${n} freehand pencil icons for the web. MIT licensed.">
 <meta property="og:url" content="https://matita.dev/">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Matita">
+<meta property="og:image" content="https://matita.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Matita: ruled by the grid, drawn by hand. ${n} freehand pencil icons for the web.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://matita.dev/">
 <meta name="theme-color" content="#F6F4EE">
+<link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preload" href="fonts/geist-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/geist-mono-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="site.css">
@@ -255,7 +264,6 @@ ${grid}
         <div class="detail-actions">
           <button type="button" class="btn btn-primary btn-sm" id="d-copy">Copy code</button>
           <button type="button" class="btn btn-sm" id="d-copy-name">Copy name</button>
-          <button type="button" class="btn btn-sm" id="d-download">Download .svg</button>
         </div>
       </aside>
     </div>
@@ -421,5 +429,6 @@ import { Ruler } from '@matita/icons/react';
 </body>
 </html>
 `;
-  await write('index.html', html);
+  /* links that leave the site open in a new tab */
+  await write('index.html', html.replace(/<a ([^>]*?)href="(https?:\/\/[^"]+)"/g, '<a $1href="$2" target="_blank" rel="noopener"'));
 }

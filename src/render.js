@@ -30,7 +30,7 @@ export function iconAttrs(icon, opts = {}) {
 }
 
 const attrString = a => Object.entries(a).filter(([, v]) => v !== undefined && v !== null && v !== false)
-  .map(([k, v]) => v === '' ? k : `${k}="${esc(v)}"`).join(' ');
+  .map(([k, v]) => `${k}="${esc(v)}"`).join(' '); // always k="v": bare attributes are invalid XML in standalone .svg files
 
 /** Inner markup (paths only) — for sprites or custom wrappers. */
 export function toSvgInner(icon, opts = {}) {

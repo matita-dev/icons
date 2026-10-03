@@ -15,8 +15,15 @@ test('every glyph is exported in every format', async () => {
     assert.equal(lib[pascal(n)], lib.icons[n]);
     assert.equal(typeof R[pascal(n)], 'object');
     assert.match(await readFile(new URL(`../dist/svg/${n}.svg`, import.meta.url), 'utf8'), /^<svg [^>]*viewBox="0 0 24 24"/);
-    assert.match(await readFile(new URL(`../dist/svg-pencil/${n}.svg`, import.meta.url), 'utf8'), /data-sketch-pencil/);
+    assert.match(await readFile(new URL(`../dist/svg-pencil/${n}.svg`, import.meta.url), 'utf8'), /data-sketch-pencil=""/);
   }
+});
+
+test('svg files are well-formed XML: every attribute has a quoted value', async () => {
+  const bare = /<[a-z]+(?:\s+[\w:-]+="[^"]*")*\s+[\w:-]+(?=[\s/>])(?!=)/i;
+  const files = lib.names.flatMap(n => [`svg/${n}.svg`, `svg-pencil/${n}.svg`]).concat('sprite.svg');
+  for (const f of files) assert.doesNotMatch(await readFile(new URL(`../dist/${f}`, import.meta.url), 'utf8'), bare, f);
+  assert.doesNotMatch(lib.toSvg(lib.Ruler, { pencil: true }), bare);
 });
 
 test('drawings are deterministic and seed-dependent', () => {
