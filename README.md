@@ -2,7 +2,7 @@
 
 Freehand pencil icons for the web. Lines overshoot their ends like ruled pencil strokes, boxes cross at the corners, circles overlap where the pen closes. Every glyph is deterministic: the same name always draws the same way.
 
-- 54 glyphs · 24 grid · 1.6 stroke · `currentColor`
+- 103 glyphs · 24 grid · 1.6 stroke · `currentColor`
 - Plain, descriptive kebab-case names (`arrow-right`, `trash-2`, `circle-check`)
 - Stroke-based, so color and stroke width stay yours to change
 - Pencil variant with uneven pressure, a faint second pass and graphite grain
