@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /* Builds every distributable from src/defs.js:
-   dist/svg · dist/svg-pencil · dist/sprite.svg · dist/icons.json · dist/esm · dist/react · dist/umd · dist/pencil.css · preview/index.html */
+   dist/svg · dist/svg-pencil · dist/sprite.svg · dist/icons.json · dist/esm · dist/react · dist/umd · dist/pencil.css · preview/ (the matita.dev site, see scripts/site.mjs) */
 import { mkdir, rm, writeFile, readFile, copyFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DEFS, drawIcon } from '../src/sketchify.js';
 import { toSvg, toSvgInner, pascal } from '../src/render.js';
+import { buildSite } from './site.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const src = p => join(root, 'src', p), dist = p => join(root, 'dist', p);
@@ -125,61 +126,7 @@ await esbuild.build({
   outfile: dist('umd/sketch-icons.min.js'), banner: { js: banner.trim() }, logLevel: 'warning'
 });
 
-/* guideline sheet — brand-sketch-icons */
-const cell = n => `<div class="cell">${toSvg(icons[n], { size: 24 })}<span class="lbl">${n}</span></div>`;
-const sizes = [14, 16, 18, 24, 32].map(s => `<div class="size">${toSvg(icons['drafting-compass'], { size: s })}<span class="lbl">${s}</span></div>`).join('');
-const blues = ['crosshair', 'ruler', 'set-square', 'layers'].map(n => toSvg(icons[n], { size: 20, pencil: true })).join('');
-const pencilCss = (await readFile(src('pencil.css'), 'utf8')).replace(/\/\*[\s\S]*?\*\/\s*/, '').trim();
-/* Geist Mono (SIL OFL 1.1), self-hosted from @fontsource; the license text ships beside the font files */
-const fontPkg = join(root, 'node_modules/@fontsource/geist-mono');
-await mkdir(join(root, 'preview/fonts'), { recursive: true });
-for (const w of [400, 500]) {
-  const f = `geist-mono-latin-${w}-normal.woff2`;
-  await copyFile(join(fontPkg, 'files', f), join(root, 'preview/fonts', f));
-}
-await copyFile(join(fontPkg, 'LICENSE'), join(root, 'preview/fonts/OFL.txt'));
-await write(join(root, 'preview/index.html'), `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Matita icons</title>
-<link rel="preload" href="fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/geist-mono-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
-<style>
-@font-face{font-family:'Geist Mono';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/geist-mono-latin-400-normal.woff2) format('woff2')}
-@font-face{font-family:'Geist Mono';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/geist-mono-latin-500-normal.woff2) format('woff2')}
-:root{--paper-1:#F6F4EE;--ink-1:#14161B;--ink-2:#353941;--ink-3:#5E626B;--blue-500:#2748F5;
---line-1:rgba(20,22,27,.22);--line-2:rgba(20,22,27,.14);--surface-page:var(--paper-1);--text-body:var(--ink-2);
---font-mono:'Geist Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;--fw-regular:400;--fw-medium:500;--tracking-label:.08em;
---guide-h:repeating-linear-gradient(90deg,var(--line-1) 0 4px,transparent 4px 8px)}
-*{box-sizing:border-box}
-body{margin:0;background:var(--surface-page);color:var(--text-body)}
-.sheet{max-width:700px;margin:0 auto;padding:20px 22px;display:flex;flex-direction:column;gap:16px}
-.head{display:flex;align-items:baseline;gap:12px}
-.title{font:var(--fw-medium) 11px/1 var(--font-mono);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--ink-1)}
-.meta{font:var(--fw-regular) 11px/1 var(--font-mono);color:var(--ink-3)}
-.rule{flex:1;height:1px;background:var(--guide-h)}
-.grid{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:14px 6px}
-.cell{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0;color:var(--ink-1)}
-.lbl{font:var(--fw-medium) 9.5px/1.2 var(--font-mono);letter-spacing:.04em;color:var(--ink-3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.foot{display:flex;align-items:flex-end;gap:22px;padding-top:12px;border-top:1px dashed var(--line-1)}
-.size{display:flex;flex-direction:column;align-items:center;gap:6px}
-.sep{width:1px;align-self:stretch;background:var(--line-2)}
-.blue{display:flex;gap:14px;align-items:center;color:var(--blue-500)}
-.spacer{flex:1}
-.note{text-align:right}
-.note code{font:inherit;color:var(--ink-1)}
-svg.sketch-icon{display:inline-block;flex:none}
-${pencilCss}
-@media (max-width:560px){.grid{grid-template-columns:repeat(6,minmax(0,1fr))}.foot{flex-wrap:wrap;row-gap:14px}.spacer,.sep{display:none}.note{flex-basis:100%;text-align:left}}
-</style></head>
-<body>
-<main class="sheet">
-  <div class="head"><span class="title">Matita icons</span><span class="meta">${names.length} glyphs · 24 grid · 1.6 stroke</span><span class="rule"></span></div>
-  <div class="grid">
-${names.map(n => '    ' + cell(n)).join('\n')}
-  </div>
-  <div class="foot">${sizes}<span class="sep"></span><div class="blue">${blues}</div><span class="spacer"></span><span class="lbl note">Pencil variant: pass <code>pencil</code></span></div>
-</main>
-</body></html>
-`);
+/* matita.dev — the docs site, served from preview/ */
+await buildSite({ root, pkg, names, icons, DEFS, drawIcon });
 
 console.log(`built ${names.length} icons`);
