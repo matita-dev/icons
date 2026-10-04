@@ -100,7 +100,7 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
   });
 
   const n = names.length;
-  await buildShare({ root: here, write, icons, toSvg, toSvgInner, n });
+  await buildShare({ root: here, write, icons, names, toSvg, toSvgInner });
   const ico = (name, size, extra = '') => `<span class="ico" data-icon="${name}" data-size="${size}"${extra}>${toSvg(icons[name], { size })}</span>`;
 
   /* hero specimens: each annotates three of the engine's habits on one glyph. The first is rendered into the page;

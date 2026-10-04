@@ -2,6 +2,10 @@
 
 Freehand pencil icons for the web. Lines overshoot their ends like ruled pencil strokes, boxes cross at the corners, circles overlap where the pen closes. Every glyph is deterministic: the same name always draws the same way.
 
+[![All Matita icons on graph paper](https://matita.dev/set.png)](https://matita.dev)
+
+Browse, search and copy them at [matita.dev](https://matita.dev).
+
 - 173 glyphs · 24 grid · 1.6 stroke · `currentColor`
 - Plain, descriptive kebab-case names (`arrow-right`, `trash-2`, `circle-check`)
 - Stroke-based, so color and stroke width stay yours to change
@@ -59,6 +63,10 @@ npm ci --prefix site
 npm --prefix site run build   # preview/ from the @matita/icons version pinned in site/package.json
 npm run preview               # or: build dist/, then the site from it, to check unreleased glyphs
 ```
+
+## Changes
+
+See [CHANGELOG.md](https://github.com/matita-dev/icons/blob/main/CHANGELOG.md).
 
 ## License
 
