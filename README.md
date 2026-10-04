@@ -64,6 +64,10 @@ npm --prefix site run build   # preview/ from the @matita/icons version pinned i
 npm run preview               # or: build dist/, then the site from it, to check unreleased glyphs
 ```
 
+## Support Matita
+
+Matita is free and MIT licensed. If it's useful to you, you can [sponsor its development on GitHub](https://github.com/sponsors/ldons).
+
 ## Changes
 
 See [CHANGELOG.md](https://github.com/matita-dev/icons/blob/main/CHANGELOG.md).
