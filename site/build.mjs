@@ -485,6 +485,7 @@ import { Ruler } from '@matita/icons/react';
       <li><a href="https://github.com/matita-dev/icons">GitHub</a></li>
       <li><a href="https://www.npmjs.com/package/@matita/icons">npm</a></li>
       <li><a href="https://github.com/matita-dev/icons/issues/new?template=icon-request.yml">Request an icon</a></li>
+      <li><a href="https://github.com/sponsors/ldons">Support Matita</a></li>
       <li><a href="mailto:hello@matita.dev">hello@matita.dev</a></li>
     </ul>
     <p class="credit muted">Set in Geist, Geist Mono and Instrument Serif, under the SIL Open Font License (<a href="fonts/LICENSE-geist-sans.txt">Geist</a>, <a href="fonts/LICENSE-geist-mono.txt">Geist Mono</a>, <a href="fonts/LICENSE-instrument-serif.txt">Instrument Serif</a>).</p>

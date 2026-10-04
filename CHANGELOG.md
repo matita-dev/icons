@@ -2,6 +2,13 @@
 
 Changes to `@matita/icons`. While the package is on 0.x, a minor version adds glyphs and a patch fixes things.
 
+## 0.2.1 — 2026-10-04
+
+No changes to the icons or the code.
+
+- `package.json` has a `funding` link, so the project shows up in `npm fund`.
+- The README on npm now shows a preview of the whole set and links the site, the changelog and GitHub Sponsors.
+
 ## 0.2.0 — 2026-10-03
 
 119 new glyphs (54 → 173).

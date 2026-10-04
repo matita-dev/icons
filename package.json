@@ -1,6 +1,6 @@
 {
   "name": "@matita/icons",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Freehand pencil icons for the web: ruled strokes that overshoot, crossed corners, circles that overlap where the pen closes.",
   "license": "MIT",
   "homepage": "https://matita.dev",
@@ -12,6 +12,10 @@
     "url": "https://github.com/matita-dev/icons/issues"
   },
   "author": "Matita <hello@matita.dev> (https://matita.dev)",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/ldons"
+  },
   "publishConfig": {
     "access": "public"
   },
