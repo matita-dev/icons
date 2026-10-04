@@ -1,5 +1,6 @@
 /* matita.dev — favicons and the social share image, rasterised at build time. Called from build.mjs.
-   Writes favicon.svg (follows the browser's dark mode), favicon.ico, apple-touch-icon.png and og.png. */
+   Writes favicon.svg (follows the browser's dark mode), favicon.ico, apple-touch-icon.png, og.png and set.png
+   (the whole set on graph paper; the README shows it from https://matita.dev/set.png). */
 import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -47,10 +48,12 @@ function paper(w, h, step) {
   return s;
 }
 
-export async function buildShare({ root, write, icons, toSvg, toSvgInner, n }) {
+export async function buildShare({ root, write, icons, names, toSvg, toSvgInner }) {
+  const n = names.length;
   const { Resvg } = await import('@resvg/resvg-js');
   const tmp = await mkdtemp(join(tmpdir(), 'matita-fonts-'));
   try {
+    /* the mono file names its family "Geist Mono Medium"; plain "Geist Mono" silently falls back to Geist */
     const fontFiles = [];
     for (const f of ['geist-sans/files/geist-sans-latin-400-normal', 'geist-sans/files/geist-sans-latin-600-normal',
       'geist-mono/files/geist-mono-latin-500-normal', 'instrument-serif/files/instrument-serif-latin-400-italic']) {
@@ -76,7 +79,7 @@ export async function buildShare({ root, write, icons, toSvg, toSvgInner, n }) {
       const [px, py] = at(x, y), [qx, qy] = at(tx, ty);
       return `<line x1="${px}" y1="${py}" x2="${qx}" y2="${qy}" stroke="${col}" stroke-width="1.6" stroke-dasharray="6 4.5"/>` +
         `<circle cx="${px}" cy="${py}" r="${1.05 * u}" fill="${C.sheet}" stroke="${col}" stroke-width="1.8"/>` +
-        `<text x="${px}" y="${py + .38 * u}" text-anchor="middle" font-family="Geist Mono" font-weight="500" font-size="${1.05 * u}" fill="${col}">${label}</text>`;
+        `<text x="${px}" y="${py + .38 * u}" text-anchor="middle" font-family="Geist Mono Medium" font-weight="500" font-size="${1.05 * u}" fill="${col}">${label}</text>`;
     };
     let grid = '';
     for (let i = 0; i <= 24; i++) {
@@ -94,9 +97,22 @@ ${callout(.4, 1.8, 3, 4.4, '1', C.red)}${callout(13.6, 1.8, 10.2, 8.3, '2', C.bl
 <text x="72" y="118" font-family="Geist" font-weight="600" font-size="40" fill="${C.ink1}" letter-spacing="-0.8">Matita<tspan fill="${C.blue}" dx="2">/</tspan><tspan font-weight="400" fill="${C.ink3}" dx="2">icons</tspan></text>
 <text font-family="Geist" font-weight="600" font-size="66" fill="${C.ink1}" letter-spacing="-2.2"><tspan x="70" y="272">Ruled by the grid.</tspan><tspan x="70" y="350">Drawn by <tspan font-family="Instrument Serif" font-style="italic" font-weight="400" font-size="76" letter-spacing="0">hand</tspan>.</tspan></text>
 <text x="72" y="420" font-family="Geist" font-size="26" fill="${C.ink3}">${n} freehand pencil icons for the web.</text>
-<text x="72" y="540" font-family="Geist Mono" font-weight="500" font-size="22" fill="${C.ink1}">matita.dev<tspan fill="${C.ink3}" dx="18">npm i @matita/icons</tspan></text>
+<text x="72" y="540" font-family="Geist Mono Medium" font-weight="500" font-size="22" fill="${C.ink1}">matita.dev<tspan fill="${C.ink3}" dx="18">npm i @matita/icons</tspan></text>
 </svg>`;
     await write('og.png', png(og, W));
+
+    /* the whole set: one glyph per major square of the graph paper, the last row centred */
+    const cols = 16, cell = 80, g = 48, rows = Math.ceil(n / cols), SW = (cols + 2) * cell, SH = (rows + 2) * cell;
+    const set = names.map((name, i) => {
+      const r = Math.floor(i / cols), inRow = r < rows - 1 ? cols : n - r * cols;
+      const x = cell + ((cols - inRow) / 2 + i % cols) * cell + (cell - g) / 2, y = cell + r * cell + (cell - g) / 2;
+      return `<g transform="translate(${x} ${y}) scale(${g / 24})">${toSvgInner(icons[name])}</g>`;
+    }).join('');
+    await write('set.png', png(`<svg xmlns="http://www.w3.org/2000/svg" width="${SW}" height="${SH}" viewBox="0 0 ${SW} ${SH}">
+<rect width="${SW}" height="${SH}" fill="${C.paper}"/>
+${paper(SW, SH, cell / 5)}
+<g fill="none" stroke="${C.ink1}" stroke-linecap="round" stroke-linejoin="round">${set}</g>
+</svg>`, SW));
   } finally {
     await rm(tmp, { recursive: true, force: true });
   }
