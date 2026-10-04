@@ -9,7 +9,7 @@
     "build:local": "node build.mjs --local"
   },
   "dependencies": {
-    "@matita/icons": "0.2.0"
+    "@matita/icons": "0.2.1"
   },
   "devDependencies": {
     "@fontsource/geist-mono": "^5.3.0",
