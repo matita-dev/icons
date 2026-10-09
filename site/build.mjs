@@ -178,24 +178,51 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
   const demoRow = variant => pencilDemo.map(name =>
     `<span class="ico" data-icon="${name}" data-size="56" data-variant="${variant}">${toSvg(icons[name], { size: 56, pencil: variant === 'pencil' })}</span>`).join('');
 
+  /* search engines: structured data for the home page, plus robots.txt and sitemap.xml (no Search Console needed) */
+  const SITE = 'https://matita.dev/';
+  const jsonLd = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      { '@type': 'WebSite', '@id': SITE + '#website', url: SITE, name: 'Matita', inLanguage: 'en' },
+      {
+        '@type': 'SoftwareSourceCode', '@id': SITE + '#icons', url: SITE, name: 'Matita icons',
+        description: '150+ hand-drawn pencil icons as SVG and React components, deterministic and MIT licensed.',
+        codeRepository: 'https://github.com/matita-dev/icons', programmingLanguage: 'JavaScript',
+        license: 'https://opensource.org/licenses/MIT', version: pkg.version, isPartOf: { '@id': SITE + '#website' },
+        publisher: {
+          '@type': 'Organization', name: 'Matita', url: SITE, logo: SITE + 'apple-touch-icon.png',
+          sameAs: [
+            'https://github.com/matita-dev', 'https://www.npmjs.com/package/@matita/icons', 'https://dev.to/matita',
+            'https://matita.hashnode.dev', 'https://matita-dev.medium.com',
+            'https://www.figma.com/community/file/1688850201209755442/matita-icons-freehand-pencil-icon-set'
+          ]
+        }
+      }
+    ]
+  }).replace(/</g, '\\u003c');
+  await write('robots.txt', `User-agent: *\nAllow: /\n\nSitemap: ${SITE}sitemap.xml\n`);
+  await write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${SITE}</loc></url>\n</urlset>\n`);
+
   const html = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Matita · freehand pencil icons</title>
-<meta name="description" content="${n} freehand pencil icons for the web. Ruled strokes that overshoot, crossed corners, circles that overlap where the pen closes. React, plain SVG and a tiny renderer. MIT.">
+<title>Matita · hand-drawn pencil icons for React and the web</title>
+<meta name="description" content="150+ hand-drawn pencil icons as SVG and React components. Strokes overshoot, corners cross, circles overlap where the pen closes. Free and MIT licensed.">
+<meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:title" content="Matita · freehand pencil icons">
-<meta property="og:description" content="${n} freehand pencil icons for the web. MIT licensed.">
+<meta property="og:description" content="150+ freehand pencil icons for the web. MIT licensed.">
 <meta property="og:url" content="https://matita.dev/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Matita">
 <meta property="og:image" content="https://matita.dev/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Matita: ruled by the grid, drawn by hand. ${n} freehand pencil icons for the web.">
+<meta property="og:image:alt" content="Matita: ruled by the grid, drawn by hand. 150+ freehand pencil icons for the web.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://matita.dev/">
+<script type="application/ld+json">${jsonLd}</script>
 <meta name="theme-color" content="#F6F4EE">
 <link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -228,7 +255,7 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
     <div class="hero-copy">
       ${eyebrow('00', 'Freehand icons for the web')}
       <h1 id="hero-title">Ruled by the grid.<br>Drawn by <em>hand</em>.</h1>
-      <p class="lead">${n} pencil icons where lines overshoot their ends, boxes cross at the corners and circles overlap where the pen closes. Every drawing is deterministic: the same name draws the same way, everywhere.</p>
+      <p class="lead">150+ hand-drawn pencil icons as SVG and React components. Lines overshoot their ends, boxes cross at the corners and circles overlap where the pen closes. Every drawing is deterministic: the same name draws the same way, everywhere.</p>
       <div class="install-line">
         <code id="hero-install">npm i @matita/icons</code>
         <button class="btn btn-sm copy" type="button" data-copy-target="hero-install">Copy</button>
@@ -238,7 +265,7 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
         <a class="btn" href="https://github.com/matita-dev/icons">View source</a>
       </div>
       <ul class="facts" aria-label="Facts">
-        <li>${n} glyphs</li><li>24 grid</li><li>1.6 stroke</li><li>currentColor</li><li>MIT</li>
+        <li>150+ glyphs</li><li>24 grid</li><li>1.6 stroke</li><li>currentColor</li><li>MIT</li>
       </ul>
     </div>
     <div class="hero-fig">
