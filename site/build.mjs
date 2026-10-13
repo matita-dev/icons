@@ -577,12 +577,20 @@ ${siteFooter('')}
     "img-src 'self' data:", "font-src 'self'", "connect-src 'self'", "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'"
   ].join('; ');
   const small = 'Cache-Control: public, max-age=86400'; /* files whose names never change but whose content can: a day, then revalidate */
+  /* The CSP goes on HTML pages only. On everything (it used to be on /*) it also hit sitemap.xml, and the browser's own
+     XML viewer needs inline styles, so the sitemap showed as one run of text. Every page the build writes must sit under
+     one of these patterns; the check below fails the build otherwise. */
+  const CSP_PATHS = ['/', '/how-it-works/*', '/icons/*'];
+  const covered = u => CSP_PATHS.some(p => p.endsWith('*') ? u.startsWith(p.slice(0, -1)) : u === p);
+  for (const u of ['/', '/how-it-works/', ...iconPages.map(p => p.url.replace(SITE, '/'))])
+    if (!covered(u)) throw new Error(`${u}: not covered by a Content-Security-Policy rule in _headers (CSP_PATHS in build.mjs)`);
   await write('_headers', `/*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
-  Content-Security-Policy: ${csp}
+
+${CSP_PATHS.map(p => `${p}\n  Content-Security-Policy: ${csp}`).join('\n')}
 
 /fonts/*
   Cache-Control: public, max-age=31536000, immutable
