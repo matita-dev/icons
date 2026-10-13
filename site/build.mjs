@@ -4,10 +4,14 @@
    what users install. `--local` uses the repo's own build (../dist) instead, for checking unreleased glyphs.
    The icon grid is rendered here so the page reads without JavaScript; app.js adds search, controls and copy. */
 import { mkdir, rm, writeFile, readFile, copyFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { buildShare } from './share.mjs';
+import { plotted, gridLines } from './geometry.mjs';
+import { howPage } from './how.mjs';
+import { buildIconPages } from './icon.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), repo = join(here, '..');
 const LOCAL = process.argv.includes('--local');
@@ -17,7 +21,7 @@ const load = sub => import(pathToFileURL(join(pkgDir, entry[sub])).href);
 
 const pkg = JSON.parse(await readFile(join(pkgDir, 'package.json'), 'utf8'));
 const { icons, names, toSvg, toSvgInner } = await load('');
-const { DEFS, drawIcon } = await load('/engine');
+const { DEFS, drawIcon, hash } = await load('/engine');
 const pascal = n => String(n).replace(/(^|-)([a-z0-9])/g, (_, __, c) => c.toUpperCase());
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -28,40 +32,6 @@ const FONTS = [
   { pkg: 'geist-mono', family: 'Geist Mono', files: [[400, 'normal'], [500, 'normal']] },
   { pkg: 'instrument-serif', family: 'Instrument Serif', files: [[400, 'italic']] }
 ];
-
-/* Exact geometry of a glyph source, for the "plotted vs drawn" comparison. */
-function plotted(src) {
-  return src.split(';').map(part => {
-    const k = part.trim()[0], v = part.trim().slice(1).trim().split(/\s+/).map(Number);
-    const pts = []; for (let i = 0; i + 1 < v.length; i += 2) pts.push(v[i] + ',' + v[i + 1]);
-    switch (k) {
-      case 'L': return `<line x1="${v[0]}" y1="${v[1]}" x2="${v[2]}" y2="${v[3]}"/>`;
-      case 'P': return `<polyline points="${pts.join(' ')}"/>`;
-      case 'Z': return `<polygon points="${pts.join(' ')}"/>`;
-      case 'R': return `<rect x="${v[0]}" y="${v[1]}" width="${v[2]}" height="${v[3]}"/>`;
-      case 'C': return `<circle cx="${v[0]}" cy="${v[1]}" r="${v[2]}"/>`;
-      case 'E': return `<ellipse cx="${v[0]}" cy="${v[1]}" rx="${v[2]}" ry="${v[3]}"/>`;
-      case 'A': {
-        const [cx, cy, R, a0, a1] = v, p = a => [cx + Math.cos(a * Math.PI / 180) * R, cy + Math.sin(a * Math.PI / 180) * R].map(n => +n.toFixed(2));
-        const [x0, y0] = p(a0), [x1, y1] = p(a1);
-        return `<path d="M${x0} ${y0}A${R} ${R} 0 ${Math.abs(a1 - a0) > 180 ? 1 : 0} ${a1 > a0 ? 1 : 0} ${x1} ${y1}"/>`;
-      }
-      case 'Q': return `<path d="M${v[0]} ${v[1]}Q${v[2]} ${v[3]} ${v[4]} ${v[5]}"/>`;
-      case 'O': return `<circle cx="${v[0]}" cy="${v[1]}" r=".8" fill="currentColor" stroke="none"/>`;
-      default: return '';
-    }
-  }).join('');
-}
-
-/* 24-unit graph paper inside a glyph's viewBox. */
-const gridLines = (from = 0, to = 24) => {
-  let s = '';
-  for (let i = from; i <= to; i++) {
-    const cls = i % 6 === 0 ? 'g-major' : 'g-minor';
-    s += `<line class="${cls}" x1="${i}" y1="${from}" x2="${i}" y2="${to}"/><line class="${cls}" x1="${from}" y1="${i}" x2="${to}" y2="${i}"/>`;
-  }
-  return s;
-};
 
 const code = (id, text, label = 'Copy') =>
   `<div class="code"><pre id="${id}"><code>${esc(text)}</code></pre><button class="btn btn-sm copy" type="button" data-copy-target="${id}">${label}</button></div>`;
@@ -86,6 +56,10 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
     await copyFile(join(dir, 'LICENSE'), out(`fonts/LICENSE-${f.pkg}.txt`));
   }
 
+  /* images */
+  await mkdir(out('img'), { recursive: true });
+  await copyFile(join(here, 'img/sketchcn-components.jpg'), out('img/sketchcn-components.jpg'));
+
   /* styles: fonts + site + the package's own pencil grain */
   const esbuild = await import('esbuild');
   const css = faces.join('\n') + '\n' + await readFile(join(here, 'site.css'), 'utf8') + '\n' + await readFile(join(pkgDir, 'dist/pencil.css'), 'utf8');
@@ -97,6 +71,14 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
   await esbuild.build({
     entryPoints: [join(here, 'app.js')], bundle: true, minify: true, format: 'iife', target: 'es2019',
     outfile: out('app.js'), logLevel: 'warning', plugins: [matita]
+  });
+  await esbuild.build({
+    entryPoints: [join(here, 'how.js')], bundle: true, minify: true, format: 'iife', target: 'es2019',
+    outfile: out('how.js'), logLevel: 'warning', plugins: [matita]
+  });
+  await esbuild.build({
+    entryPoints: [join(here, 'icon.js')], bundle: true, minify: true, format: 'iife', target: 'es2019',
+    outfile: out('icon.js'), logLevel: 'warning', plugins: [matita]
   });
 
   const n = names.length;
@@ -186,7 +168,7 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
       { '@type': 'WebSite', '@id': SITE + '#website', url: SITE, name: 'Matita', inLanguage: 'en' },
       {
         '@type': 'SoftwareSourceCode', '@id': SITE + '#icons', url: SITE, name: 'Matita icons',
-        description: '150+ hand-drawn pencil icons as SVG and React components, deterministic and MIT licensed.',
+        description: '170+ pencil-style icons as SVG and React components, drawn by code from simple shapes. MIT licensed.',
         codeRepository: 'https://github.com/matita-dev/icons', programmingLanguage: 'JavaScript',
         license: 'https://opensource.org/licenses/MIT', version: pkg.version, isPartOf: { '@id': SITE + '#website' },
         publisher: {
@@ -201,25 +183,70 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
     ]
   }).replace(/</g, '\\u003c');
   await write('robots.txt', `User-agent: *\nAllow: /\n\nSitemap: ${SITE}sitemap.xml\n`);
-  await write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${SITE}</loc></url>\n</urlset>\n`);
+
+  /* header + footer shared by every page. `p` is '' on the home page and '/' elsewhere, so links resolve from any depth. */
+  const siteHeader = p => `<header class="site-header">
+  <div class="wrap header-in">
+    <a class="wordmark" href="${p ? '/' : '#top'}" aria-label="Matita, home">Matita<span class="wordmark-slash">/</span><span class="wordmark-sub">icons</span></a>
+    <nav class="nav" aria-label="Primary">
+      <a href="${p}#icons">Icons</a>
+      <a href="${p}#install">Install</a>
+      <a href="/how-it-works/">How it works</a>
+      <a href="${p}#used-in">Used in</a>
+    </nav>
+    <nav class="nav nav-ext" aria-label="Project links">
+      <a href="https://github.com/matita-dev/icons">GitHub</a>
+      <a href="https://www.npmjs.com/package/@matita/icons">npm</a>
+    </nav>
+    <details class="nav-menu">
+      <summary aria-label="Menu"><span class="i-open" aria-hidden="true">${toSvg(icons.menu, { size: 24 })}</span><span class="i-close" aria-hidden="true">${toSvg(icons.x, { size: 24 })}</span></summary>
+      <nav class="menu-panel" aria-label="Menu">
+        <a href="${p}#icons">Icons</a>
+        <a href="${p}#install">Install</a>
+        <a href="/how-it-works/">How it works</a>
+        <a href="${p}#used-in">Used in</a>
+        <a href="https://github.com/matita-dev/icons">GitHub</a>
+        <a href="https://www.npmjs.com/package/@matita/icons">npm</a>
+      </nav>
+    </details>
+  </div>
+</header>`;
+  const siteFooter = p => `<footer class="site-footer">
+  <div class="wrap footer-in">
+    <div>
+      <p class="wordmark">Matita<span class="wordmark-slash">/</span><span class="wordmark-sub">icons</span></p>
+      <p class="muted">MIT licensed · v${esc(pkg.version)}</p>
+    </div>
+    <ul class="footer-links">
+      <li><a href="/how-it-works/">How it works</a></li>
+      <li><a href="/icons/">All icons</a></li>
+      <li><a href="https://github.com/matita-dev/icons">GitHub</a></li>
+      <li><a href="https://www.npmjs.com/package/@matita/icons">npm</a></li>
+      <li><a href="https://github.com/matita-dev/icons/issues/new?template=icon-request.yml">Request an icon</a></li>
+      <li><a href="https://github.com/sponsors/ldons">Support Matita</a></li>
+      <li><a href="mailto:hello@matita.dev">hello@matita.dev</a></li>
+    </ul>
+    <p class="credit muted">Set in Geist, Geist Mono and Instrument Serif, under the SIL Open Font License (<a href="${p}fonts/LICENSE-geist-sans.txt">Geist</a>, <a href="${p}fonts/LICENSE-geist-mono.txt">Geist Mono</a>, <a href="${p}fonts/LICENSE-instrument-serif.txt">Instrument Serif</a>).</p>
+  </div>
+</footer>`;
 
   const html = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Matita · hand-drawn pencil icons for React and the web</title>
-<meta name="description" content="150+ hand-drawn pencil icons as SVG and React components. Strokes overshoot, corners cross, circles overlap where the pen closes. Free and MIT licensed.">
+<title>Matita · pencil-style icons for React and the web</title>
+<meta name="description" content="170+ pencil-style icons as SVG and React components, drawn by code. Strokes overshoot, corners cross, circles overlap where the pen closes. Free and MIT licensed.">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<meta property="og:title" content="Matita · freehand pencil icons">
-<meta property="og:description" content="150+ freehand pencil icons for the web. MIT licensed.">
+<meta property="og:title" content="Matita · pencil-style icons">
+<meta property="og:description" content="170+ pencil-style icons for the web, drawn by code. MIT licensed.">
 <meta property="og:url" content="https://matita.dev/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Matita">
 <meta property="og:image" content="https://matita.dev/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Matita: ruled by the grid, drawn by hand. 150+ freehand pencil icons for the web.">
+<meta property="og:image:alt" content="Matita: ruled by the grid, sketched by code. 170+ pencil-style icons for the web.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://matita.dev/">
 <script type="application/ld+json">${jsonLd}</script>
@@ -236,26 +263,15 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
 <body>
 <a class="skip" href="#icons">Skip to icons</a>
 
-<header class="site-header">
-  <div class="wrap header-in">
-    <a class="wordmark" href="#top" aria-label="Matita, home">Matita<span class="wordmark-slash">/</span><span class="wordmark-sub">icons</span></a>
-    <nav class="nav" aria-label="Primary">
-      <a href="#icons">Icons</a>
-      <a href="#install">Install</a>
-      <a href="#drawn">How it's drawn</a>
-      <a href="https://github.com/matita-dev/icons">GitHub</a>
-      <a href="https://www.npmjs.com/package/@matita/icons">npm</a>
-    </nav>
-  </div>
-</header>
+${siteHeader('')}
 
 <main id="top">
 <section class="hero" aria-labelledby="hero-title">
   <div class="wrap hero-in">
     <div class="hero-copy">
-      ${eyebrow('00', 'Freehand icons for the web')}
-      <h1 id="hero-title">Ruled by the grid.<br>Drawn by <em>hand</em>.</h1>
-      <p class="lead">150+ hand-drawn pencil icons as SVG and React components. Lines overshoot their ends, boxes cross at the corners and circles overlap where the pen closes. Every drawing is deterministic: the same name draws the same way, everywhere.</p>
+      ${eyebrow('00', 'Pencil-style icons for the web')}
+      <h1 id="hero-title">Ruled by the grid.<br>Sketched by <em>code</em>.</h1>
+      <p class="lead">170+ pencil-style icons as SVG and React components. Each one is a few simple shapes that code draws like a pencil would: lines overshoot their ends, boxes cross at the corners and circles overlap where the pen closes. The same name always draws the same way, everywhere.</p>
       <div class="install-line">
         <code id="hero-install">npm i @matita/icons</code>
         <button class="btn btn-sm copy" type="button" data-copy-target="hero-install">Copy</button>
@@ -265,7 +281,7 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
         <a class="btn" href="https://github.com/matita-dev/icons">View source</a>
       </div>
       <ul class="facts" aria-label="Facts">
-        <li>150+ glyphs</li><li>24 grid</li><li>1.6 stroke</li><li>currentColor</li><li>MIT</li>
+        <li>170+ glyphs</li><li>24 grid</li><li>1.6 stroke</li><li>currentColor</li><li>MIT</li>
       </ul>
     </div>
     <div class="hero-fig">
@@ -285,7 +301,7 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
     ${eyebrow('01', 'Icons')}
     <div class="section-head">
       <h2 id="icons-title">The set</h2>
-      <p class="muted">Click an icon for its code. Size, stroke and colour are yours to change.</p>
+      <p class="muted">Click an icon for its code. Size, stroke and colour are yours to change. Every icon also has <a href="/icons/">its own page</a>.</p>
     </div>
 
     <div class="toolbar" aria-label="Icon controls">
@@ -357,6 +373,7 @@ ${grid}
         <div class="detail-actions">
           <button type="button" class="btn btn-primary btn-sm" id="d-copy">Copy code</button>
           <button type="button" class="btn btn-sm" id="d-copy-name">Copy name</button>
+          <a class="btn btn-sm" id="d-page" href="/icons/ruler/">Open page</a>
         </div>
       </aside>
     </div>
@@ -423,7 +440,7 @@ document.body.append(createElement(Ruler, { size: 24, pencil: true }));`)}
           <tr><td><code>strokeWidth</code></td><td>number</td><td><code>1.6</code></td><td>Stroke width on the 24 grid. Every stroke scales with it.</td></tr>
           <tr><td><code>pencil</code></td><td>boolean</td><td><code>false</code></td><td>Graphite variant: uneven pressure and a faint second pass. Pair with <code>pencil.css</code>.</td></tr>
           <tr><td><code>title</code></td><td>string</td><td>none</td><td>Accessible label. Without it the icon is <code>aria-hidden</code>.</td></tr>
-          <tr><td><code>seed</code></td><td>number</td><td><code>0</code></td><td><code>SketchIcon</code> only: a different, equally deterministic drawing.</td></tr>
+          <tr><td><code>seed</code></td><td>number</td><td><code>0</code></td><td><code>SketchIcon</code> only: a different drawing that always comes out the same for that seed.</td></tr>
         </tbody>
       </table>
     </div>
@@ -474,6 +491,7 @@ document.body.append(createElement(Ruler, { size: 24, pencil: true }));`)}
       <p class="seeds-l">Same name, same seed, same drawing: in SVG, React and the browser, on every machine. Change the seed for another take.</p>
       <div class="seed-row">${seeds}</div>
     </div>
+    <div class="used-actions page-cta"><a class="btn btn-primary" href="/how-it-works/">How it works, step by step ${ico('arrow-right', 16)}</a></div>
   </div>
 </section>
 
@@ -500,30 +518,90 @@ import { Ruler } from '@matita/icons/react';
 <Ruler size={32} pencil />`)}
   </div>
 </section>
+
+<section class="section" id="used-in" aria-labelledby="used-title">
+  <div class="wrap">
+    ${eyebrow('05', 'Used in')}
+    <div class="section-head">
+      <h2 id="used-title">Where Matita <em>shows up</em></h2>
+      <p class="muted">Libraries and projects that ship Matita. Using it somewhere? Open an issue or write to <a href="mailto:hello@matita.dev">hello@matita.dev</a> and it can be listed here.</p>
+    </div>
+    <div class="used">
+      <figure class="frame used-fig">
+        <figcaption class="frame-cap"><span>Fig. 04 · In sketchcn</span><span class="frame-rule" aria-hidden="true"></span></figcaption>
+        <img src="img/sketchcn-components.jpg" width="706" height="372" loading="lazy" alt="The sketchcn docs page for Matita: a row of Matita icons, and sketchcn buttons, a date picker and a theme toggle that use them">
+      </figure>
+      <div class="used-copy">
+        <h3>sketchcn</h3>
+        <p>A registry of hand-drawn React components in the shadcn style. Since 0.2.0 its Button, Checkbox, Dialog, Native Select, Sheet, Sidebar and Toast use Matita for their icons, and its docs have an icons page with install steps.</p>
+        <div class="used-actions">
+          <a class="btn btn-primary" href="https://sketchcn.chuwii.com">Visit sketchcn ${ico('arrow-right', 16)}</a>
+          <a class="btn" href="https://sketchcn.chuwii.com/icons">How they use Matita</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 </main>
 
-<footer class="site-footer">
-  <div class="wrap footer-in">
-    <div>
-      <p class="wordmark">Matita<span class="wordmark-slash">/</span><span class="wordmark-sub">icons</span></p>
-      <p class="muted">MIT licensed · v${esc(pkg.version)}</p>
-    </div>
-    <ul class="footer-links">
-      <li><a href="https://github.com/matita-dev/icons">GitHub</a></li>
-      <li><a href="https://www.npmjs.com/package/@matita/icons">npm</a></li>
-      <li><a href="https://github.com/matita-dev/icons/issues/new?template=icon-request.yml">Request an icon</a></li>
-      <li><a href="https://github.com/sponsors/ldons">Support Matita</a></li>
-      <li><a href="mailto:hello@matita.dev">hello@matita.dev</a></li>
-    </ul>
-    <p class="credit muted">Set in Geist, Geist Mono and Instrument Serif, under the SIL Open Font License (<a href="fonts/LICENSE-geist-sans.txt">Geist</a>, <a href="fonts/LICENSE-geist-mono.txt">Geist Mono</a>, <a href="fonts/LICENSE-instrument-serif.txt">Instrument Serif</a>).</p>
-  </div>
-</footer>
+${siteFooter('')}
 
 <div class="sr-only" id="announce" aria-live="polite"></div>
 </body>
 </html>
 `;
   /* links that leave the site open in a new tab */
-  await write('index.html', html.replace(/<a ([^>]*?)href="(https?:\/\/[^"]+)"/g, '<a $1href="$2" target="_blank" rel="noopener"'));
+  const external = s => s.replace(/<a ([^>]*?)href="(https?:\/\/[^"]+)"/g, '<a $1href="$2" target="_blank" rel="noopener"');
+  const howHtml = external(howPage({ icons, DEFS, drawIcon, toSvg, toSvgInner, hash, esc, code, eyebrow, siteHeader, siteFooter, pkg }));
+  await write('index.html', external(html));
+  await write('how-it-works/index.html', howHtml);
+
+  /* one page per icon + the /icons/ hub */
+  const iconPages = buildIconPages({ icons, names, DEFS, drawIcon, hash, toSvg, toSvgInner, esc, code, eyebrow, siteHeader, siteFooter, pascal, pkg })
+    .map(p => ({ ...p, html: external(p.html) }));
+  for (const p of iconPages) await write(p.file, p.html);
+
+  /* sitemap: every page on the site */
+  await write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${
+    [SITE, SITE + 'how-it-works/', ...iconPages.map(p => p.url)].map(u => `  <url><loc>${u}</loc></url>`).join('\n')}\n</urlset>\n`);
+
+  /* _headers (Cloudflare static assets): security headers on everything, long caching for files that never change.
+     The page is plain HTML + one external script per page, so the policy can be strict. The only inline script is the
+     one-liner that adds the `js` class; it is allowed by hash, so a CSP check here fails the build if it is edited.
+     Not set here: HSTS (Cloudflare dashboard), and no Cross-Origin-Resource-Policy, because the README hot-links set.png. */
+  const INLINE_JS = "document.documentElement.className+=' js'";
+  for (const [name, page] of [['index.html', html], ['how-it-works/index.html', howHtml], ...iconPages.map(p => [p.file, p.html])])
+    if (!page.includes(`<script>${INLINE_JS}</script>`)) throw new Error(`${name}: the inline script no longer matches the CSP hash in build.mjs`);
+  const csp = [
+    "default-src 'self'", `script-src 'self' 'sha256-${createHash('sha256').update(INLINE_JS).digest('base64')}'`, "style-src 'self'",
+    "img-src 'self' data:", "font-src 'self'", "connect-src 'self'", "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'"
+  ].join('; ');
+  const small = 'Cache-Control: public, max-age=86400'; /* files whose names never change but whose content can: a day, then revalidate */
+  await write('_headers', `/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Content-Security-Policy: ${csp}
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/img/*
+  Cache-Control: public, max-age=2592000
+
+/og.png
+  ${small}
+/og/*
+  ${small}
+/set.png
+  ${small}
+/apple-touch-icon.png
+  ${small}
+/favicon.ico
+  ${small}
+/favicon.svg
+  ${small}
+`);
   console.log(`site built with ${pkg.name}@${pkg.version}${LOCAL ? ' (local ../dist)' : ''}, ${n} icons`);
 }
