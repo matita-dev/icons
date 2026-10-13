@@ -136,6 +136,9 @@ svg.sketch-icon { display: inline-block; flex: none; vertical-align: middle; }
 .btn-primary { background: var(--solid); border-color: var(--solid); color: var(--on-solid); }
 .btn-primary:hover { background: var(--solid); color: var(--on-solid); opacity: .88; }
 .btn-sm { min-height: 32px; padding: 0 11px; font-size: 12.5px; }
+.btn:disabled { opacity: .45; cursor: default; pointer-events: none; }
+#seed-out { min-width: 3ch; font-variant-numeric: tabular-nums; }
+.btn-icon { width: 32px; padding: 0; }
 
 .seg { display: inline-flex; border: 1px solid var(--line-1); }
 .seg button {
@@ -308,7 +311,7 @@ text.c-green { fill: var(--green); }
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px 22px;
+  gap: 12px 18px;
   padding: 14px 16px;
   border: 1px solid var(--line-1);
   background: var(--sheet);
@@ -317,7 +320,7 @@ text.c-green { fill: var(--green); }
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: 1 1 240px;
+  flex: 1 1 200px;
   min-width: 0;
   min-height: 40px;
   padding: 0 10px;

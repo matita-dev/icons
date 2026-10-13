@@ -168,7 +168,7 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
       { '@type': 'WebSite', '@id': SITE + '#website', url: SITE, name: 'Matita', inLanguage: 'en' },
       {
         '@type': 'SoftwareSourceCode', '@id': SITE + '#icons', url: SITE, name: 'Matita icons',
-        description: '170+ pencil-style icons as SVG and React components, drawn by code from simple shapes. MIT licensed.',
+        description: '200+ pencil-style icons as SVG and React components, drawn by code from simple shapes. MIT licensed.',
         codeRepository: 'https://github.com/matita-dev/icons', programmingLanguage: 'JavaScript',
         license: 'https://opensource.org/licenses/MIT', version: pkg.version, isPartOf: { '@id': SITE + '#website' },
         publisher: {
@@ -236,17 +236,17 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Matita · pencil-style icons for React and the web</title>
-<meta name="description" content="170+ pencil-style icons as SVG and React components, drawn by code. Strokes overshoot, corners cross, circles overlap where the pen closes. Free and MIT licensed.">
+<meta name="description" content="200+ pencil-style icons as SVG and React components, drawn by code. Strokes overshoot, corners cross, circles overlap where the pen closes. Free and MIT licensed.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:title" content="Matita · pencil-style icons">
-<meta property="og:description" content="170+ pencil-style icons for the web, drawn by code. MIT licensed.">
+<meta property="og:description" content="200+ pencil-style icons for the web, drawn by code. MIT licensed.">
 <meta property="og:url" content="https://matita.dev/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Matita">
 <meta property="og:image" content="https://matita.dev/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Matita: ruled by the grid, sketched by code. 170+ pencil-style icons for the web.">
+<meta property="og:image:alt" content="Matita: ruled by the grid, sketched by code. 200+ pencil-style icons for the web.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://matita.dev/">
 <script type="application/ld+json">${jsonLd}</script>
@@ -271,7 +271,7 @@ ${siteHeader('')}
     <div class="hero-copy">
       ${eyebrow('00', 'Pencil-style icons for the web')}
       <h1 id="hero-title">Ruled by the grid.<br>Sketched by <em>code</em>.</h1>
-      <p class="lead">170+ pencil-style icons as SVG and React components. Each one is a few simple shapes that code draws like a pencil would: lines overshoot their ends, boxes cross at the corners and circles overlap where the pen closes. The same name always draws the same way, everywhere.</p>
+      <p class="lead">200+ pencil-style icons as SVG and React components. Each one is a few simple shapes that code draws like a pencil would: lines overshoot their ends, boxes cross at the corners and circles overlap where the pen closes. The same name always draws the same way, everywhere.</p>
       <div class="install-line">
         <code id="hero-install">npm i @matita/icons</code>
         <button class="btn btn-sm copy" type="button" data-copy-target="hero-install">Copy</button>
@@ -281,7 +281,7 @@ ${siteHeader('')}
         <a class="btn" href="https://github.com/matita-dev/icons">View source</a>
       </div>
       <ul class="facts" aria-label="Facts">
-        <li>170+ glyphs</li><li>24 grid</li><li>1.6 stroke</li><li>currentColor</li><li>MIT</li>
+        <li>200+ glyphs</li><li>24 grid</li><li>1.6 stroke</li><li>currentColor</li><li>MIT</li>
       </ul>
     </div>
     <div class="hero-fig">
@@ -336,7 +336,7 @@ ${siteHeader('')}
         <span class="ctl-l">Seed</span>
         <output id="seed-out">0</output>
         <button type="button" class="btn btn-sm" id="redraw">Redraw</button>
-        <button type="button" class="btn btn-sm" id="seed-reset" hidden>Reset</button>
+        <button type="button" class="btn btn-sm btn-icon" id="seed-reset" aria-label="Reset seed to 0" title="Reset seed to 0" disabled>${toSvg(icons['rotate-ccw'], { size: 16 })}</button>
       </div>
     </div>
 
@@ -426,7 +426,7 @@ document.body.append(createElement(Ruler, { size: 24, pencil: true }));`)}
 @matita/icons/pencil/<name>.svg    // pencil variant
 @matita/icons/sprite.svg           // <symbol id="<name>">
 @matita/icons/icons.json           // path data for every glyph
-@matita/icons/pencil.css           // graphite grain for the pencil variant`)}
+@matita/icons/pencil.css           // paper grain for the pencil variant`)}
       </div>
     </div>
 
@@ -438,7 +438,7 @@ document.body.append(createElement(Ruler, { size: 24, pencil: true }));`)}
           <tr><td><code>size</code></td><td>number | string</td><td><code>16</code></td><td>Width and height in px (or any CSS length).</td></tr>
           <tr><td><code>color</code></td><td>string</td><td><code>currentColor</code></td><td>Stroke colour.</td></tr>
           <tr><td><code>strokeWidth</code></td><td>number</td><td><code>1.6</code></td><td>Stroke width on the 24 grid. Every stroke scales with it.</td></tr>
-          <tr><td><code>pencil</code></td><td>boolean</td><td><code>false</code></td><td>Graphite variant: uneven pressure and a faint second pass. Pair with <code>pencil.css</code>.</td></tr>
+          <tr><td><code>pencil</code></td><td>boolean</td><td><code>false</code></td><td>Pencil variant: every stroke drawn as two or three loose pencil lines. Pair with <code>pencil.css</code> for the paper grain.</td></tr>
           <tr><td><code>title</code></td><td>string</td><td>none</td><td>Accessible label. Without it the icon is <code>aria-hidden</code>.</td></tr>
           <tr><td><code>seed</code></td><td>number</td><td><code>0</code></td><td><code>SketchIcon</code> only: a different drawing that always comes out the same for that seed.</td></tr>
         </tbody>
@@ -500,7 +500,7 @@ document.body.append(createElement(Ruler, { size: 24, pencil: true }));`)}
     ${eyebrow('04', 'Pencil variant')}
     <div class="section-head">
       <h2 id="pencil-title">Ink, or <em>graphite</em></h2>
-      <p class="muted">Pass <code>pencil</code> for uneven pressure and a faint second pass. Import <code>pencil.css</code> once for the paper-tooth grain.</p>
+      <p class="muted">Pass <code>pencil</code> and every stroke is drawn as two or three loose pencil lines, like a quick sketch. Import <code>pencil.css</code> once for the paper grain.</p>
     </div>
     <div class="variants">
       <figure class="frame variant">
