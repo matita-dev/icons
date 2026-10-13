@@ -16,7 +16,7 @@ const FAQ = [
   ['What does "the same every time" mean?',
     'That the drawing is repeatable. The wobble is not rolled fresh on every render: it comes from the icon\'s name, so the server and the browser, or two different builds, draw exactly the same strokes. If you want another take, ask for a different seed.'],
   ['How big are the icons?',
-    'About 0.8 KB each as a raw SVG (about 0.45 KB gzipped), and around 1.5 KB for the pencil version. In a bundle, one React icon adds about 1 KB gzipped with the renderer included, and ten add about 4 KB. The whole set is drawn once at build time and ships as finished path data.'],
+    'About 0.8 KB each as a raw SVG (about 0.45 KB gzipped), and around 2.2 KB for the pencil version (under 1 KB gzipped). In a bundle, one React icon adds about 2 KB gzipped with the renderer included, ten add about 5 KB, and every icon by name about 46 KB. The ink is drawn once at build time and ships as finished path data; the pencil lines are worked out from it when an icon is shown.'],
   ['Does it still read at 16 px?',
     'Yes. Every habit of the pencil has a cap. At 24 px a line bows by less than a pixel and an endpoint moves by about a fifth of one, and no stroke is thinner than about 1.4. The pencil character shows from about 32 px up.'],
   ['Can I turn any SVG into this style?',
@@ -124,7 +124,7 @@ ${siteHeader('/')}
     <dl class="habits">
       ${habit('Lines overshoot', 'Both ends of a line are pushed out along its direction by 0.2 to 0.5, and each endpoint moves by up to 0.2. The line is drawn as a gentle curve whose middle is pulled sideways by at most 0.7, or 4.5 % of its length, whichever is smaller. A ruled pencil line is never perfectly straight and rarely stops exactly where you aimed.')}
       ${habit('Boxes cross at the corners', 'A rectangle is not a closed path. It is four separate lines with a bigger overshoot (0.5 to 1.5), so every corner is a small cross, like a box drawn edge by edge.')}
-      ${habit('Circles overlap where the pen closes', 'A circle starts at a random angle and sweeps 388° to 418°, so the pen runs 28° to 58° past where it started. Over the sweep the radius drifts outward by 0.55 to 1, so the closing pass sits just outside the opening one. Each point gets ±2.8 % radius noise, and the whole ring is squashed by up to 4.5 %.')}
+      ${habit('Circles overlap, or stop just short', 'A circle starts at a random angle, and the pen closes it one of three ways: a long overlap that runs 30° to 58° past the start, a short one of 4° to 18°, or, on rings with a radius of 4 or more, a stop just short of the start. Over the sweep the radius drifts outward by 0.55 to 1 (a third of that when it stops short), so the closing pass sits just outside the opening one. Each point gets ±2.8 % radius noise, and the whole ring is squashed by up to 4.5 %.')}
       ${habit('Joints stay sharp', 'Every corner of a polyline moves by up to 0.2 and every segment bows on its own, but the joints stay sharp: a check mark still has a point at the bottom. Closed shapes run past their starting point along the first edge, the way you would close a shape without lifting the pencil.')}
       ${habit('Arcs and curves overshoot too', 'Arcs run 4° to 9° past each end, and curves overshoot their ends by 0.15 to 0.45.')}
       ${habit('Pressure varies per stroke', 'Every stroke gets its own width, between 0.86 and 1.14 times the base 1.6.')}

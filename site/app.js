@@ -126,7 +126,7 @@ const seedOut = $('#seed-out'), reset = $('#seed-reset');
 function setSeed(s) {
   state.seed = s;
   seedOut.textContent = String(s);
-  reset.hidden = s === 0;
+  reset.disabled = s === 0;
   renderGrid(); renderDetail();
   announce(s ? `Redrawn with seed ${s}` : 'Back to seed 0');
 }
