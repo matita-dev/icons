@@ -95,11 +95,30 @@ ${grid}
 <g transform="translate(${at(0, 0).join(' ')}) scale(${u})" fill="none" stroke="${C.ink1}" stroke-linecap="round" stroke-linejoin="round">${toSvgInner(icons.image, { strokeWidth: .62 })}</g>
 ${callout(.4, 1.8, 3, 4.4, '1', C.red)}${callout(13.6, 1.8, 10.2, 8.3, '2', C.blue)}${callout(.4, 22.4, 3.4, 17.6, '3', C.green)}
 <text x="72" y="118" font-family="Geist" font-weight="600" font-size="40" fill="${C.ink1}" letter-spacing="-0.8">Matita<tspan fill="${C.blue}" dx="2">/</tspan><tspan font-weight="400" fill="${C.ink3}" dx="2">icons</tspan></text>
-<text font-family="Geist" font-weight="600" font-size="66" fill="${C.ink1}" letter-spacing="-2.2"><tspan x="70" y="272">Ruled by the grid.</tspan><tspan x="70" y="350">Drawn by <tspan font-family="Instrument Serif" font-style="italic" font-weight="400" font-size="76" letter-spacing="0">hand</tspan>.</tspan></text>
-<text x="72" y="420" font-family="Geist" font-size="26" fill="${C.ink3}">150+ freehand pencil icons for the web.</text>
+<text font-family="Geist" font-weight="600" font-size="66" fill="${C.ink1}" letter-spacing="-2.2"><tspan x="70" y="272">Ruled by the grid.</tspan><tspan x="70" y="350">Sketched by <tspan font-family="Instrument Serif" font-style="italic" font-weight="400" font-size="76" letter-spacing="0">code</tspan>.</tspan></text>
+<text x="72" y="420" font-family="Geist" font-size="26" fill="${C.ink3}">170+ pencil-style icons for the web.</text>
 <text x="72" y="540" font-family="Geist Mono Medium" font-weight="500" font-size="22" fill="${C.ink1}">matita.dev<tspan fill="${C.ink3}" dx="18">npm i @matita/icons</tspan></text>
 </svg>`;
     await write('og.png', png(og, W));
+
+    /* one share card per icon page (og/<name>.png): same layout, the icon itself on the sheet, its name as the headline.
+       The headline shrinks for long names so it never runs into the sheet (~540 px of room). */
+    for (const name of names) {
+      const title = name.replace(/-/g, ' ').replace(/^./, c => c.toUpperCase());
+      const fs = Math.max(44, Math.min(76, Math.floor(540 / (title.length * .56))));
+      const card = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+<rect width="${W}" height="${H}" fill="${C.paper}"/>
+${paper(W, H, 30)}
+<rect x="${at(0, 0)[0]}" y="${at(0, 0)[1]}" width="${24 * u}" height="${24 * u}" fill="${C.sheet}"/>
+${grid}
+<g transform="translate(${at(0, 0).join(' ')}) scale(${u})" fill="none" stroke="${C.ink1}" stroke-linecap="round" stroke-linejoin="round">${toSvgInner(icons[name], { strokeWidth: .62 })}</g>
+<text x="72" y="118" font-family="Geist" font-weight="600" font-size="40" fill="${C.ink1}" letter-spacing="-0.8">Matita<tspan fill="${C.blue}" dx="2">/</tspan><tspan font-weight="400" fill="${C.ink3}" dx="2">icons</tspan></text>
+<text font-family="Geist" font-weight="600" font-size="${fs}" fill="${C.ink1}" letter-spacing="${-fs / 30}"><tspan x="70" y="272">${title}</tspan><tspan x="70" y="${272 + Math.round(fs * 1.12)}" font-family="Instrument Serif" font-style="italic" font-weight="400" font-size="${Math.round(fs * 1.15)}" letter-spacing="0">icon</tspan></text>
+<text x="72" y="452" font-family="Geist" font-size="26" fill="${C.ink3}">Pencil-style SVG and React icon. Free, MIT.</text>
+<text x="72" y="540" font-family="Geist Mono Medium" font-weight="500" font-size="22" fill="${C.ink1}">matita.dev/icons/${name}/</text>
+</svg>`;
+      await write(`og/${name}.png`, png(card, W));
+    }
 
     /* the whole set: one glyph per major square of the graph paper, the last row centred */
     const cols = 16, cell = 80, g = 48, rows = Math.ceil(n / cols), SW = (cols + 2) * cell, SH = (rows + 2) * cell;

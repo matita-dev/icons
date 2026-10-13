@@ -1,6 +1,9 @@
 /* matita.dev behaviour. Uses the published package's engine + renderer, so what you copy is exactly what you see. */
 import { DEFS, drawIcon } from '@matita/icons/engine';
 import { toSvg } from '@matita/icons';
+import { initMenu } from './menu.mjs';
+
+initMenu();
 
 const pascal = n => String(n).replace(/(^|-)([a-z0-9])/g, (_, __, c) => c.toUpperCase());
 const $ = (s, r = document) => r.querySelector(s);
@@ -160,6 +163,7 @@ function renderDetail() {
   const name = state.selected;
   if (!name) return;
   $('#d-name').textContent = name;
+  $('#d-page').href = `/icons/${name}/`;
   $('#d-comp').textContent = pascal(name);
   $('#d-file').textContent = `${state.pencil ? 'pencil' : 'icons'}/${name}.svg`;
   $('#d-glyph').innerHTML = toSvg(draw(name, state.seed), opts(120));
