@@ -15,8 +15,9 @@ test('every glyph is exported in every format', async () => {
     assert.equal(lib[pascal(n)], lib.icons[n]);
     assert.equal(typeof R[pascal(n)], 'object');
     assert.match(await readFile(new URL(`../dist/svg/${n}.svg`, import.meta.url), 'utf8'), /^<svg [^>]*viewBox="0 0 24 24"/);
-    assert.match(await readFile(new URL(`../dist/svg-pencil/${n}.svg`, import.meta.url), 'utf8'), /data-sketch-pencil=""/);
+    assert.match(await readFile(new URL(`../dist/svg-pencil/${n}.svg`, import.meta.url), 'utf8'), /data-sketch-pencil=""[^>]*><defs><filter id="matita-grain"[^]*<g filter="url\(#matita-grain\)">[^]*<\/g><\/svg>/);
   }
+  assert.match(await readFile(new URL('../dist/pencil.css', import.meta.url), 'utf8'), /mask-image:url\("data:image\/svg\+xml,/);
 });
 
 test('svg files are well-formed XML: every attribute has a quoted value', async () => {
@@ -31,11 +32,16 @@ test('drawings are deterministic and seed-dependent', () => {
   assert.notDeepEqual(drawIcon('ruler', { seed: 3 }).ink, lib.icons.ruler.ink);
 });
 
-test('toSvg: stroke width scales every path, pencil adds the second pass', () => {
+test('toSvg: stroke width scales every path, pencil draws two or three lines per stroke', () => {
   const ink = lib.toSvg(lib.Search, { strokeWidth: 2 }), pencil = lib.toSvg(lib.Search, { pencil: true });
-  const count = s => (s.match(/<path /g) || []).length;
+  const count = s => (s.match(/<path /g) || []).length, subpaths = icon => icon.ink.reduce((a, [d]) => a + d.split('M').length - 1, 0);
   assert.equal(count(ink), lib.Search.ink.length);
-  assert.equal(count(pencil), lib.Search.ink.length * 2);
+  for (const icon of [lib.Search, lib.Calendar, lib.Info]) {
+    const n = count(lib.toSvg(icon, { pencil: true })) - (icon.dot ? 1 : 0);
+    assert.ok(n >= 2 * subpaths(icon) && n <= 3 * subpaths(icon), `${icon.name}: ${n} pencil lines`);
+  }
+  assert.equal(lib.toSvg(lib.Search, { pencil: true }), pencil);
+  assert.notEqual(lib.toSvg(drawIcon('search', { seed: 3 }), { pencil: true }), pencil);
   assert.match(ink, /stroke-width="2"/);
   assert.match(lib.toSvg(lib.Info, { title: 'Info' }), /role="img" aria-label="Info"><title>Info<\/title>/);
 });

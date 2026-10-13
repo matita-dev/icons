@@ -2,12 +2,11 @@
    Lines overshoot their ends like ruled pencil lines, boxes cross at the corners, circles overlap where the pen closes,
    polylines keep sharp joints with a slight bow per segment. Same name + seed = same drawing, everywhere. */
 import { DEFS } from './defs.js';
+import { hash, prng } from './random.js';
 
 const f = n => Math.round(n * 100) / 100, pt = p => f(p[0]) + ' ' + f(p[1]);
 
-export const hash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
-
-export const prng = s => { let a = s >>> 0 || 1; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+export { hash, prng };
 
 function smooth(P) {
   let d = 'M' + pt(P[0]);
@@ -36,7 +35,11 @@ export function sketchify(src, r) {
     return d;
   };
   const ring = (cx, cy, rx, ry) => {
-    const a0 = r() * 360, sw = 388 + r() * 30, n = Math.max(10, Math.ceil(sw / 24)), dr = .55 + r() * .45, sq = 1 + j(.045), P = []; ry *= sq; rx /= sq;
+    // The pen closes three ways: a long overlap, a short one, or (on rings big enough to show it) stopping just short.
+    // The point count keeps its 0.2 formula so the random stream, and every stroke drawn after the ring, stay as they were.
+    const a0 = r() * 360, u = r(), n = Math.max(10, Math.ceil((388 + u * 30) / 24)), long = u < .45, gap = u >= .8 && Math.min(rx, ry) >= 4;
+    const sw = long ? 390 + u / .45 * 28 : gap ? 360 - (1.9 + (u - .8) * 3.5) / ((rx + ry) / 2) * 180 / Math.PI : 364 + (u - .45) / .55 * 14;
+    const dr = (.55 + r() * .45) * (gap ? .3 : 1), sq = 1 + j(.045), P = []; ry *= sq; rx /= sq;
     for (let i = 0; i <= n; i++) { const t = i / n, a = (a0 + sw * t) * Math.PI / 180, k = 1 + j(.028), g = dr * t; P.push([cx + Math.cos(a) * (rx * k + g), cy + Math.sin(a) * (ry * k + g)]); }
     return smooth(P);
   };
@@ -67,20 +70,13 @@ export function drawSource(src, key, seed = 0) {
   return sketchify(src, prng(hash(key) + (seed || 0) * 7919));
 }
 
-/** Everything any renderer needs for one glyph: ink strokes, the dot pass, and the pencil-mode extras. */
+/** Everything any renderer needs for one glyph: ink strokes and the dot pass. The pencil variant is drawn from the
+    ink at render time (see pencil.js), so it adds nothing to the icon data. */
 export function drawIcon(name, { seed = 0, defs = DEFS } = {}) {
   const src = defs[name];
   if (!src) throw new Error('Unknown sketch icon: ' + name);
-  const g = drawSource(src, name, seed), g2 = drawSource(src, name, (seed || 0) + 101), hs = hash(name);
-  return {
-    name,
-    ink: g.p.map(p => [p.d, p.w]),
-    dot: g.o,
-    pencil: {
-      opacity: g.p.map((_, i) => f(.8 + ((hs >>> (i * 3 % 24)) & 15) / 100)),
-      pass: g2.p.map(p => [p.d, p.w])
-    }
-  };
+  const g = drawSource(src, name, seed);
+  return { name, ink: g.p.map(p => [p.d, p.w]), dot: g.o };
 }
 
 export { DEFS };

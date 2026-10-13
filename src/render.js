@@ -1,18 +1,17 @@
 /* Framework-free renderer shared by every output (static SVG, sprite, vanilla DOM, React). */
+import { pencilLines } from './pencil.js';
+
 const r = n => Math.round(n * 1e4) / 1e4;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
 export const DEFAULTS = { size: 16, color: 'currentColor', strokeWidth: 1.6, pencil: false };
 
-/** Path list for one icon: ink strokes, then (pencil) the faint second pass, then dots. */
+/** Path list for one icon: ink strokes (or, for pencil, two or three loose pencil lines per stroke), then dots. */
 export function iconPaths(icon, { strokeWidth = DEFAULTS.strokeWidth, pencil = false } = {}) {
-  const out = icon.ink.map(([d, w], i) => pencil
-    ? { d, 'stroke-width': r(strokeWidth * w), 'stroke-opacity': icon.pencil.opacity[i] }
-    : { d, 'stroke-width': r(strokeWidth * w) });
-  if (pencil) for (const [d, w] of icon.pencil.pass) out.push({ d, 'stroke-width': r(strokeWidth * w * .55), 'stroke-opacity': .32 });
-  if (icon.dot) out.push(pencil
-    ? { d: icon.dot, 'stroke-width': r(strokeWidth * 1.55), 'stroke-opacity': .9 }
-    : { d: icon.dot, 'stroke-width': r(strokeWidth * 1.55) });
+  const out = pencil
+    ? pencilLines(icon).map(([d, w, o]) => ({ d, 'stroke-width': r(strokeWidth * w), 'stroke-opacity': o }))
+    : icon.ink.map(([d, w]) => ({ d, 'stroke-width': r(strokeWidth * w) }));
+  if (icon.dot) out.push({ d: icon.dot, 'stroke-width': r(strokeWidth * (pencil ? 1.35 : 1.55)) });
   return out;
 }
 
