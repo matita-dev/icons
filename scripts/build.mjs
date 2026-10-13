@@ -20,10 +20,15 @@ const js = v => JSON.stringify(v);
 
 await rm(join(root, 'dist'), { recursive: true, force: true });
 
-/* static SVGs */
+/* static SVGs. A standalone pencil file can't use pencil.css, so it carries the same paper grain as a filter. */
+const GRAIN = '<defs><filter id="matita-grain" filterUnits="userSpaceOnUse" x="-3" y="-3" width="30" height="30" color-interpolation-filters="sRGB">'
+  + '<feTurbulence type="fractalNoise" baseFrequency="2.4" numOctaves="2" seed="5" result="noise"/>'
+  + '<feColorMatrix in="noise" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3.2 0 0 0 2.6" result="tooth"/>'
+  + '<feComposite in="SourceGraphic" in2="tooth" operator="in"/></filter></defs>';
 for (const n of names) {
   await write(dist(`svg/${n}.svg`), toSvg(icons[n], { size: 24 }) + '\n');
-  await write(dist(`svg-pencil/${n}.svg`), toSvg(icons[n], { size: 24, pencil: true }) + '\n');
+  await write(dist(`svg-pencil/${n}.svg`), toSvg(icons[n], { size: 24, pencil: true })
+    .replace(/^<svg [^>]*>/, s => s + GRAIN + '<g filter="url(#matita-grain)">').replace(/<\/svg>$/, '</g></svg>') + '\n');
 }
 await write(dist('sprite.svg'),
   `<svg xmlns="http://www.w3.org/2000/svg" style="display:none">\n` +
@@ -34,6 +39,8 @@ await copyFile(src('pencil.css'), dist('pencil.css'));
 
 /* ESM: engine, renderer, per-icon data, index */
 await write(dist('esm/defs.js'), banner + await readFile(src('defs.js'), 'utf8'));
+await write(dist('esm/random.js'), banner + await readFile(src('random.js'), 'utf8'));
+await write(dist('esm/pencil.js'), banner + await readFile(src('pencil.js'), 'utf8'));
 await write(dist('esm/engine.js'), banner + await readFile(src('sketchify.js'), 'utf8'));
 await write(dist('esm/render.js'), banner + await readFile(src('render.js'), 'utf8'));
 for (const n of names) await write(dist(`esm/icons/${n}.js`), `export default ${js(icons[n])};\n`);
@@ -63,13 +70,12 @@ export interface SketchIconData {
   ink: [string, number][];
   /** dot marks, drawn at 1.55× stroke */
   dot: string;
-  pencil: { opacity: number[]; pass: [string, number][] };
 }
 export interface SketchIconOptions {
   /** px, default 16 */ size?: number | string;
   /** CSS colour, default currentColor */ color?: string;
   /** stroke width on the 24 grid, default 1.6 */ strokeWidth?: number;
-  /** graphite variant: uneven pressure + a faint second pass (pair with pencil.css for grain) */ pencil?: boolean;
+  /** pencil variant: every stroke drawn as two or three loose pencil lines (pair with pencil.css for the paper grain) */ pencil?: boolean;
   /** accessible label; omit for decorative icons */ title?: string;
   class?: string;
   attrs?: Record<string, string | number>;
@@ -105,7 +111,7 @@ export interface SketchIconProps extends Omit<React.SVGProps<SVGSVGElement>, 're
   /** CSS colour, default currentColor */ color?: string;
   /** stroke width on the 24 grid, default 1.6 (≈1px at 16px) */ strokeWidth?: number;
   /** alias of strokeWidth */ weight?: number;
-  /** graphite variant: uneven pressure + a faint second pass (pair with pencil.css for grain) */ pencil?: boolean;
+  /** pencil variant: every stroke drawn as two or three loose pencil lines (pair with pencil.css for the paper grain) */ pencil?: boolean;
   /** accessible label; omit for decorative icons */ title?: string;
 }
 export type SketchIconComponent = React.ForwardRefExoticComponent<SketchIconProps & React.RefAttributes<SVGSVGElement>>;

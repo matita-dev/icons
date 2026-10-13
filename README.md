@@ -1,15 +1,15 @@
 # Matita icons
 
-Freehand pencil icons for the web. Lines overshoot their ends like ruled pencil strokes, boxes cross at the corners, circles overlap where the pen closes. Every glyph is deterministic: the same name always draws the same way.
+Freehand pencil icons for the web. Lines overshoot their ends like ruled pencil strokes, boxes cross at the corners, circles overlap where the pen closes, or stop just short. Every glyph is deterministic: the same name always draws the same way.
 
 [![All Matita icons on graph paper](https://matita.dev/set.png)](https://matita.dev)
 
 Browse, search and copy them at [matita.dev](https://matita.dev).
 
-- 173 glyphs · 24 grid · 1.6 stroke · `currentColor`
+- 200 glyphs · 24 grid · 1.6 stroke · `currentColor`
 - Plain, descriptive kebab-case names (`arrow-right`, `trash-2`, `circle-check`)
 - Stroke-based, so color and stroke width stay yours to change
-- Pencil variant with uneven pressure, a faint second pass and graphite grain
+- Pencil variant: every stroke drawn as two or three loose pencil lines, with paper grain
 
 ## Install
 
@@ -38,7 +38,7 @@ toSvg(Ruler, { size: 24 });               // SVG string
 <script>SketchIcons.replaceIcons({ icons: SketchIcons.icons });</script>
 ```
 
-Plain files: `@matita/icons/icons/<name>.svg`, `@matita/icons/pencil/<name>.svg`, `@matita/icons/sprite.svg`, `@matita/icons/icons.json`. For the pencil grain, import `@matita/icons/pencil.css`.
+Plain files: `@matita/icons/icons/<name>.svg`, `@matita/icons/pencil/<name>.svg`, `@matita/icons/sprite.svg`, `@matita/icons/icons.json`. For the pencil grain, import `@matita/icons/pencil.css` (the `pencil/<name>.svg` files have it built in).
 
 ## Add an icon
 
