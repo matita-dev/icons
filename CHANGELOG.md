@@ -2,7 +2,7 @@
 
 Changes to `@matita/icons`. While the package is on 0.x, a minor version adds glyphs and a patch fixes things.
 
-## 0.3.0 — unreleased
+## 0.3.0 — 2026-10-13
 
 27 new glyphs (173 → 200), a new pencil variant, a redrawn printer, and circles that close in more than one way.
 
