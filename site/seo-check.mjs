@@ -8,9 +8,9 @@ import { fileURLToPath } from 'node:url';
 const root = process.argv[2] || join(dirname(fileURLToPath(import.meta.url)), '..', 'preview');
 const SITE = 'https://matita.dev/';
 const walk = d => readdirSync(join(root, d), { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(join(d, e.name)) : e.name === 'index.html' ? [join(d, e.name).replace(/\\/g, '/')] : []);
-const files = ['index.html', ...walk('how-it-works'), ...walk('icons')];
+const files = ['index.html', ...walk('how-it-works'), ...walk('changelog'), ...walk('roadmap'), ...walk('icons')];
 const urlOf = f => f === 'index.html' ? SITE : SITE + f.replace(/index\.html$/, '');
-const SAMPLE = new Set(['index.html', 'how-it-works/index.html', 'icons/index.html', 'icons/calendar/index.html']);
+const SAMPLE = new Set(['index.html', 'how-it-works/index.html', 'icons/index.html', 'icons/calendar/index.html', 'changelog/index.html']);
 
 const decode = s => s.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 const strip = s => decode(s.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<svg[\s\S]*?<\/svg>/g, ' ').replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();

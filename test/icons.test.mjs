@@ -32,6 +32,30 @@ test('drawings are deterministic and seed-dependent', () => {
   assert.notDeepEqual(drawIcon('ruler', { seed: 3 }).ink, lib.icons.ruler.ink);
 });
 
+test('wobble: 1 is the default drawing, 0 is the exact shapes, in between is less hand', () => {
+  for (const n of ['ruler', 'search', 'calendar', 'info']) {
+    assert.deepEqual(drawIcon(n, { wobble: 1 }), drawIcon(n));
+    const exact = drawIcon(n, { wobble: 0 }), half = drawIcon(n, { wobble: .5 });
+    assert.deepEqual(drawIcon(n, { wobble: 0, seed: 9 }), exact, 'exact shapes do not depend on the seed');
+    assert.notDeepEqual(exact.ink, drawIcon(n).ink);
+    assert.notDeepEqual(half.ink, drawIcon(n).ink);
+    assert.ok(exact.ink.every(([, w]) => w === 1));
+  }
+  assert.equal(drawIcon('minus', { wobble: 0 }).ink[0][0], 'M5 12L19 12');
+  assert.match(drawIcon('circle', { wobble: 0 }).ink[0][0], /^M[\d. ]+A[\d. ]+ 0 1 0 [\d. ]+A/);
+  assert.deepEqual(drawIcon('ruler', { wobble: 7 }), drawIcon('ruler'), 'wobble is clamped to 1');
+  assert.match(renderToStaticMarkup(h(R.SketchIcon, { name: 'minus', wobble: 0 })), /d="M5 12L19 12"/);
+  assert.doesNotMatch(renderToStaticMarkup(h(R.SketchIcon, { name: 'minus', wobble: 0 })), /wobble/);
+});
+
+test('pencil variant also draws over exact shapes (lines, arcs, closed shapes)', () => {
+  for (const n of ['circle', 'calendar', 'heart', 'clock', 'bezier', 'radiation']) {
+    const svg = lib.toSvg(drawIcon(n, { wobble: 0 }), { pencil: true });
+    assert.doesNotMatch(svg, /NaN|undefined|Infinity/, n);
+    assert.ok((svg.match(/<path /g) || []).length >= 2, n);
+  }
+});
+
 test('toSvg: stroke width scales every path, pencil draws two or three lines per stroke', () => {
   const ink = lib.toSvg(lib.Search, { strokeWidth: 2 }), pencil = lib.toSvg(lib.Search, { pencil: true });
   const count = s => (s.match(/<path /g) || []).length, subpaths = icon => icon.ink.reduce((a, [d]) => a + d.split('M').length - 1, 0);

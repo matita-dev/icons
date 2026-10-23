@@ -2,6 +2,17 @@
 
 Changes to `@matita/icons`. While the package is on 0.x, a minor version adds glyphs and a patch fixes things.
 
+## 0.4.0 — 2026-10-23
+
+60 new glyphs (200 → 260) and a wobble setting that goes all the way down to exact shapes.
+
+- **Medical and science:** stethoscope, syringe, pill, test-tube, microscope, thermometer, heart-pulse, medical-cross, bandage, radiation, x-ray, dna, atom, brain, tooth, bone, ambulance, hospital-bed, mars, venus, face-mask, pipette
+- **People and files:** user-check, user-minus, user-circle, file-check, file-x, file-code, folder-plus, mail-open, calendar-check
+- **Tools, devices and places:** wrench, hammer, plug, keyboard, cpu, hard-drive, bluetooth, store, building, car, plane
+- **Everyday:** timer, alarm-clock, calculator, receipt, qr-code, gauge, target, trophy, award, graduation-cap, leaf, umbrella, shuffle, repeat, percent, briefcase, trending-down, book-open
+- **New: wobble.** `drawIcon(name, { wobble })` and `<SketchIcon wobble={…} />` take a number from 0 to 1 that scales every habit of the hand: jitter, bow, overshoot and ring overlap. 1 is the default and draws exactly what 0.3.0 drew. 0 draws the glyph as exact shapes (true lines, circles, arcs and square corners). It also works for your own glyphs.
+- **New: exact SVG files.** `@matita/icons/exact/<name>.svg` is every glyph at wobble 0.
+
 ## 0.3.0 — 2026-10-13
 
 27 new glyphs (173 → 200), a new pencil variant, a redrawn printer, and circles that close in more than one way.
