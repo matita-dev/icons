@@ -2,7 +2,7 @@
    resolve from any depth. The home page keeps its own head (it also carries the site-wide JSON-LD). */
 export const SITE = 'https://matita.dev/';
 
-const OG_ALT = 'Matita: ruled by the grid, sketched by code. 200+ pencil-style icons for the web.';
+const OG_ALT = 'Matita: ruled by the grid, sketched by code. 260+ pencil-style icons for the web.';
 
 export function pageHead({ esc, url, title, description, ogTitle, ogType = 'website', jsonLd, script, ogImage = SITE + 'og.png', ogImageAlt = OG_ALT }) {
   return `<!doctype html>
