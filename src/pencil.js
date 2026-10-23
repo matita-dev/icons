@@ -7,14 +7,41 @@ import { hash, prng } from './random.js';
 const f = n => Math.round(n * 10) / 10, len = (x, y) => Math.sqrt(x * x + y * y);
 const cache = new WeakMap();
 
-/** Engine paths are M + Q/C segments, sometimes several subpaths per stroke (a box is four lines). */
+/** An SVG arc (no rotation) as cubic segments of up to a quarter turn each: [[c1, c2, end], ...]. */
+function arcToCubics(p0, rx, ry, large, sweep, p1) {
+  const x1 = (p0[0] - p1[0]) / 2, y1 = (p0[1] - p1[1]) / 2, lam = (x1 * x1) / (rx * rx) + (y1 * y1) / (ry * ry);
+  if (lam > 1) { rx *= Math.sqrt(lam); ry *= Math.sqrt(lam); }
+  const num = rx * rx * ry * ry - rx * rx * y1 * y1 - ry * ry * x1 * x1, den = rx * rx * y1 * y1 + ry * ry * x1 * x1;
+  const k = (large === sweep ? -1 : 1) * Math.sqrt(Math.max(0, num / (den || 1)));
+  const cxp = k * rx * y1 / ry, cyp = -k * ry * x1 / rx, cx = cxp + (p0[0] + p1[0]) / 2, cy = cyp + (p0[1] + p1[1]) / 2;
+  const a0 = Math.atan2((y1 - cyp) / ry, (x1 - cxp) / rx);
+  let da = Math.atan2((-y1 - cyp) / ry, (-x1 - cxp) / rx) - a0;
+  if (!sweep && da > 0) da -= 2 * Math.PI; else if (sweep && da < 0) da += 2 * Math.PI;
+  const n = Math.max(1, Math.ceil(Math.abs(da) / (Math.PI / 2) - 1e-9)), step = da / n, t = 4 / 3 * Math.tan(step / 4), out = [];
+  const P = a => [cx + rx * Math.cos(a), cy + ry * Math.sin(a)], D = a => [-rx * Math.sin(a), ry * Math.cos(a)];
+  for (let s = 0; s < n; s++) {
+    const A = a0 + step * s, B = A + step, pa = P(A), pb = P(B), dA = D(A), dB = D(B);
+    out.push([[pa[0] + t * dA[0], pa[1] + t * dA[1]], [pb[0] - t * dB[0], pb[1] - t * dB[1]], s === n - 1 ? p1 : pb]);
+  }
+  return out;
+}
+
+/** Engine paths are M + Q/C segments, sometimes several subpaths per stroke (a box is four lines). Exact shapes
+    (wobble 0) also use L, A and Z; those are turned into the same segments here. */
 function subpaths(d) {
-  const t = d.match(/[MQC]|-?\d*\.?\d+/g), out = [];
-  let i = 0, cur, pen;
+  const t = d.match(/[MLQCAZ]|-?\d*\.?\d+/g), out = [];
+  let i = 0, cur, pen, start;
   const pt = () => [+t[i++], +t[i++]];
+  const line = p => { cur.push(['Q', pen, [(pen[0] + p[0]) / 2, (pen[1] + p[1]) / 2], p]); pen = p; };
   while (i < t.length) {
     const c = t[i++];
-    if (c === 'M') { pen = pt(); out.push(cur = []); }
+    if (c === 'M') { pen = start = pt(); out.push(cur = []); }
+    else if (c === 'L') line(pt());
+    else if (c === 'Z') { if (pen[0] !== start[0] || pen[1] !== start[1]) line(start); }
+    else if (c === 'A') {
+      const rx = +t[i++], ry = +t[i++]; i++; const large = +t[i++], sweep = +t[i++], p = pt();
+      for (const [c1, c2, e] of arcToCubics(pen, rx, ry, large, sweep, p)) { cur.push(['C', pen, c1, c2, e]); pen = e; }
+    }
     else { const p = c === 'Q' ? [pt(), pt()] : [pt(), pt(), pt()]; cur.push([c, pen, ...p]); pen = p[p.length - 1]; }
   }
   return out;

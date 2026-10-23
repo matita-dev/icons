@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* Builds every distributable from src/defs.js:
-   dist/svg · dist/svg-pencil · dist/sprite.svg · dist/icons.json · dist/esm · dist/react · dist/umd · dist/pencil.css
+   dist/svg · dist/svg-pencil · dist/svg-exact · dist/sprite.svg · dist/icons.json · dist/esm · dist/react · dist/umd · dist/pencil.css
    The matita.dev site is a separate project in site/ that builds from the published package. */
 import { mkdir, rm, writeFile, readFile, copyFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -27,6 +27,7 @@ const GRAIN = '<defs><filter id="matita-grain" filterUnits="userSpaceOnUse" x="-
   + '<feComposite in="SourceGraphic" in2="tooth" operator="in"/></filter></defs>';
 for (const n of names) {
   await write(dist(`svg/${n}.svg`), toSvg(icons[n], { size: 24 }) + '\n');
+  await write(dist(`svg-exact/${n}.svg`), toSvg(drawIcon(n, { wobble: 0 }), { size: 24 }) + '\n');
   await write(dist(`svg-pencil/${n}.svg`), toSvg(icons[n], { size: 24, pencil: true })
     .replace(/^<svg [^>]*>/, s => s + GRAIN + '<g filter="url(#matita-grain)">').replace(/<\/svg>$/, '</g></svg>') + '\n');
 }
@@ -95,10 +96,13 @@ await write(dist('esm/engine.d.ts'), `import type { SketchIconData } from './ind
 /** Built-in glyph sources: drafting primitives on a 24 grid (L line · P polyline · Z closed · R rect · C circle · E ellipse · A arc · Q curve · O dot). */
 export declare const DEFS: Record<string, string>;
 export declare const names: string[];
-/** Draw a glyph. Pass your own \`defs\` to draw custom icons in the same hand; \`seed\` gives a different drawing. */
-export declare function drawIcon(name: string, opts?: { seed?: number; defs?: Record<string, string> }): SketchIconData;
-export declare function drawSource(src: string, key: string, seed?: number): { p: { d: string; w: number }[]; o: string };
-export declare function sketchify(src: string, random: () => number): { p: { d: string; w: number }[]; o: string };
+/** Draw a glyph. Pass your own \`defs\` to draw custom icons in the same hand; \`seed\` gives a different drawing;
+    \`wobble\` (0 to 1, default 1) is how much hand there is: 0 is the exact shapes, 1 the full drawing. */
+export declare function drawIcon(name: string, opts?: { seed?: number; wobble?: number; defs?: Record<string, string> }): SketchIconData;
+export declare function drawSource(src: string, key: string, seed?: number, wobble?: number): { p: { d: string; w: number }[]; o: string };
+export declare function sketchify(src: string, random: () => number, wobble?: number): { p: { d: string; w: number }[]; o: string };
+/** The primitives exactly as written: true lines, circles, arcs and corners. What wobble 0 draws. */
+export declare function exact(src: string): { p: { d: string; w: number }[]; o: string };
 export declare function hash(s: string): number;
 export declare function prng(seed: number): () => number;
 `);
@@ -118,7 +122,7 @@ export type SketchIconComponent = React.ForwardRefExoticComponent<SketchIconProp
 export declare const SketchIconContext: React.Context<Pick<SketchIconProps, 'size' | 'color' | 'strokeWidth' | 'pencil'>>;
 export declare function SketchIconProvider(props: Pick<SketchIconProps, 'size' | 'color' | 'strokeWidth' | 'pencil'> & { children?: React.ReactNode }): React.JSX.Element;
 export declare function createSketchIcon(icon: SketchIconData): SketchIconComponent;
-export declare const SketchIcon: React.ForwardRefExoticComponent<SketchIconProps & { name: SketchIconName; seed?: number } & React.RefAttributes<SVGSVGElement>> & {
+export declare const SketchIcon: React.ForwardRefExoticComponent<SketchIconProps & { name: SketchIconName; seed?: number; /** 0 = exact shapes, 1 = the full hand (default) */ wobble?: number } & React.RefAttributes<SVGSVGElement>> & {
   names: SketchIconName[];
   has(name: string): name is SketchIconName;
 };

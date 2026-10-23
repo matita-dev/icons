@@ -11,13 +11,13 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const names = Object.keys(DEFS);
 
 const cache = new Map();
-const draw = (name, seed = 0) => {
-  const k = name + ':' + seed;
-  if (!cache.has(k)) cache.set(k, drawIcon(name, { seed }));
+const draw = (name, seed = 0, wobble = 1) => {
+  const k = name + ':' + seed + ':' + wobble;
+  if (!cache.has(k)) cache.set(k, drawIcon(name, { seed, wobble }));
   return cache.get(k);
 };
 
-const state = { q: '', size: 24, strokeWidth: 1.6, color: 'currentColor', pencil: false, seed: 0, selected: 'ruler', fmt: 'react' };
+const state = { q: '', size: 24, strokeWidth: 1.6, color: 'currentColor', pencil: false, seed: 0, wobble: 1, selected: 'ruler', fmt: 'react' };
 const opts = (size = state.size) => ({ size, strokeWidth: state.strokeWidth, color: state.color, pencil: state.pencil });
 const announce = msg => { const el = $('#announce'); el.textContent = ''; setTimeout(() => { el.textContent = msg; }, 30); };
 
@@ -54,14 +54,15 @@ const byName = Object.fromEntries(buttons.map(b => [b.dataset.name, b]));
 
 function renderGrid() {
   const o = opts();
-  for (const b of buttons) b.firstElementChild.innerHTML = toSvg(draw(b.dataset.name, state.seed), o);
+  for (const b of buttons) b.firstElementChild.innerHTML = toSvg(draw(b.dataset.name, state.seed, state.wobble), o);
 }
 
 function filter() {
   const q = state.q.trim().toLowerCase().replace(/\s+/g, '-');
   let shown = 0;
   for (const b of buttons) {
-    const hit = !q || b.dataset.name.includes(q);
+    /* "new" also finds the latest additions (the ones with a New badge) */
+    const hit = !q || b.dataset.name.includes(q) || (q === 'new' && !!b.querySelector('.badge-new'));
     b.parentElement.hidden = !hit;
     if (hit) shown++;
   }
@@ -130,8 +131,27 @@ function setSeed(s) {
   renderGrid(); renderDetail();
   announce(s ? `Redrawn with seed ${s}` : 'Back to seed 0');
 }
-$('#redraw').addEventListener('click', () => setSeed(state.seed + 1));
+const wobble = $('#wobble'), perfect = $('#perfect');
+$('#redraw').addEventListener('click', () => {
+  /* Redraw is about seeing the hand's other takes, and there is nothing to see at 0% (exact shapes). So from 0% it
+     brings the full hand back; at any other wobble it leaves the setting alone. */
+  if (wobble && state.wobble === 0) setWobble(1);
+  setSeed(state.seed + 1);
+});
 reset.addEventListener('click', () => { setSeed(0); $('#redraw').focus(); });
+
+/* wobble: how much hand there is. 1 = the drawing, 0 = exact shapes ("perfect"). Only on pages built with a package that has it. */
+function setWobble(w) {
+  state.wobble = Math.round(w * 100) / 100;
+  wobble.value = String(state.wobble);
+  $('#wobble-out').textContent = Math.round(state.wobble * 100) + '%';
+  perfect.setAttribute('aria-pressed', String(state.wobble === 0));
+  renderGrid(); renderDetail();
+}
+if (wobble && perfect) {
+  wobble.addEventListener('input', () => setWobble(+wobble.value));
+  perfect.addEventListener('click', () => { setWobble(state.wobble === 0 ? 1 : 0); announce(state.wobble === 0 ? 'Exact shapes, no wobble' : 'Back to the full hand'); });
+}
 
 /* ---------- detail panel ---------- */
 const detail = $('#detail'), scrim = $('#scrim');
@@ -149,13 +169,25 @@ function snippets(name) {
   if (s.strokeWidth !== 1.6) jsOpts.push(`strokeWidth: ${s.strokeWidth}`);
   if (s.pencil) jsOpts.push('pencil: true');
   const css = s.pencil ? `import '@matita/icons/pencil.css';\n` : '';
-  const react = s.seed
-    ? `${css}import { SketchIcon } from '@matita/icons/react';\n\n<SketchIcon name="${name}" seed={${s.seed}} ${props.join(' ')} />`
-    : `${css}import { ${P} } from '@matita/icons/react';\n\n<${P} ${props.join(' ')} />`;
-  const js = s.seed
-    ? `${css}import { toSvg } from '@matita/icons';\nimport { drawIcon } from '@matita/icons/engine';\n\ntoSvg(drawIcon('${name}', { seed: ${s.seed} }), { ${jsOpts.join(', ')} });`
-    : `${css}import { ${P}, toSvg } from '@matita/icons';\n\ntoSvg(${P}, { ${jsOpts.join(', ')} });`;
-  const svg = toSvg(draw(name, s.seed), opts());
+  const custom = s.seed || s.wobble !== 1;
+  const extra = [s.seed ? 'seed={' + s.seed + '}' : '', s.wobble !== 1 ? 'wobble={' + s.wobble + '}' : ''].filter(Boolean).join(' ');
+  const jsExtra = [s.seed ? 'seed: ' + s.seed : '', s.wobble !== 1 ? 'wobble: ' + s.wobble : ''].filter(Boolean).join(', ');
+  const react = custom
+    ? `${css}import { SketchIcon } from '@matita/icons/react';
+
+<SketchIcon name="${name}" ${extra} ${props.join(' ')} />`
+    : `${css}import { ${P} } from '@matita/icons/react';
+
+<${P} ${props.join(' ')} />`;
+  const js = custom
+    ? `${css}import { toSvg } from '@matita/icons';
+import { drawIcon } from '@matita/icons/engine';
+
+toSvg(drawIcon('${name}', { ${jsExtra} }), { ${jsOpts.join(', ')} });`
+    : `${css}import { ${P}, toSvg } from '@matita/icons';
+
+toSvg(${P}, { ${jsOpts.join(', ')} });`;
+  const svg = toSvg(draw(name, s.seed, s.wobble), opts());
   return { react, js, svg };
 }
 
@@ -165,8 +197,11 @@ function renderDetail() {
   $('#d-name').textContent = name;
   $('#d-page').href = `/icons/${name}/`;
   $('#d-comp').textContent = pascal(name);
-  $('#d-file').textContent = `${state.pencil ? 'pencil' : 'icons'}/${name}.svg`;
-  $('#d-glyph').innerHTML = toSvg(draw(name, state.seed), opts(120));
+  $('#d-file').textContent = `${state.pencil ? 'pencil' : state.wobble === 0 ? 'exact' : 'icons'}/${name}.svg`;
+  const since = byName[name].dataset.since, dSince = $('#d-since');
+  dSince.textContent = `v${since}`;
+  dSince.href = `/changelog/#v${since.replace(/\./g, '-')}`;
+  $('#d-glyph').innerHTML = toSvg(draw(name, state.seed, state.wobble), opts(120));
   $('#d-code').firstElementChild.textContent = snippets(name)[state.fmt];
 }
 

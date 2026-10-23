@@ -12,6 +12,8 @@ import { buildShare } from './share.mjs';
 import { plotted, gridLines } from './geometry.mjs';
 import { howPage } from './how.mjs';
 import { buildIconPages } from './icon.mjs';
+import { readHistory, changelogPage, anchor } from './changelog.mjs';
+import { roadmapPage, roadmapOpen } from './roadmap.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), repo = join(here, '..');
 const LOCAL = process.argv.includes('--local');
@@ -82,6 +84,13 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
   });
 
   const n = names.length;
+  /* does this package have the wobble setting (0.4.0+)? Pages only offer it when it does, so a site built on an older
+     pin never shows a control that does nothing. */
+  const HAS_WOBBLE = drawIcon('minus', { wobble: 0 }).ink[0][0] !== drawIcon('minus').ink[0][0];
+  /* which release added each icon, from CHANGELOG.md; icons from the newest batch get a "New" badge */
+  const history = readHistory({ file: join(repo, 'CHANGELOG.md'), names, version: pkg.version });
+  const newIcons = names.filter(name => history.isNew(name));
+  const newBadge = name => history.isNew(name) ? `<span class="badge-new" title="Added in ${history.latest}">New</span>` : '';
   await buildShare({ root: here, write, icons, names, toSvg, toSvgInner });
   const ico = (name, size, extra = '') => `<span class="ico" data-icon="${name}" data-size="${size}"${extra}>${toSvg(icons[name], { size })}</span>`;
 
@@ -149,16 +158,17 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
 
   /* icon grid, server-rendered at the default size */
   const grid = names.map(name =>
-    `<li><button class="icon-btn" type="button" data-name="${name}" aria-pressed="false"><span class="glyph">${toSvg(icons[name], { size: 24 })}</span><span class="icon-name">${name}</span></button></li>`).join('\n');
+    `<li><button class="icon-btn" type="button" data-name="${name}" data-since="${history.since[name]}" aria-pressed="false"><span class="glyph">${toSvg(icons[name], { size: 24 })}</span><span class="icon-name">${name}</span>${newBadge(name)}</button></li>`).join('\n');
 
   /* "how it's drawn": one worked example + the seed idea */
   const ex = 'image', exSrc = DEFS[ex];
   const seeds = [0, 1, 2, 3, 4].map(s =>
     `<figure class="seed"><span class="ico" data-icon="${ex}" data-size="56" data-seed="${s}">${toSvg(drawIcon(ex, { seed: s }), { size: 56 })}</span><figcaption>seed ${s}</figcaption></figure>`).join('');
 
-  const pencilDemo = ['ruler', 'drafting-compass', 'set-square', 'crosshair', 'layers', 'pencil'];
+  /* ten icons, five to a row, so both figures fill two even rows */
+  const pencilDemo = ['ruler', 'drafting-compass', 'set-square', 'crosshair', 'layers', 'pencil', 'protractor', 'pen-nib', 'brush', 'bezier'];
   const demoRow = variant => pencilDemo.map(name =>
-    `<span class="ico" data-icon="${name}" data-size="56" data-variant="${variant}">${toSvg(icons[name], { size: 56, pencil: variant === 'pencil' })}</span>`).join('');
+    `<span class="ico" data-icon="${name}" data-size="64" data-variant="${variant}">${toSvg(icons[name], { size: 64, pencil: variant === 'pencil' })}</span>`).join('');
 
   /* search engines: structured data for the home page, plus robots.txt and sitemap.xml (no Search Console needed) */
   const SITE = 'https://matita.dev/';
@@ -191,8 +201,6 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
     <nav class="nav" aria-label="Primary">
       <a href="${p}#icons">Icons</a>
       <a href="${p}#install">Install</a>
-      <a href="/how-it-works/">How it works</a>
-      <a href="${p}#used-in">Used in</a>
     </nav>
     <nav class="nav nav-ext" aria-label="Project links">
       <a href="https://github.com/matita-dev/icons">GitHub</a>
@@ -203,8 +211,6 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
       <nav class="menu-panel" aria-label="Menu">
         <a href="${p}#icons">Icons</a>
         <a href="${p}#install">Install</a>
-        <a href="/how-it-works/">How it works</a>
-        <a href="${p}#used-in">Used in</a>
         <a href="https://github.com/matita-dev/icons">GitHub</a>
         <a href="https://www.npmjs.com/package/@matita/icons">npm</a>
       </nav>
@@ -215,18 +221,20 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
   <div class="wrap footer-in">
     <div>
       <p class="wordmark">Matita<span class="wordmark-slash">/</span><span class="wordmark-sub">icons</span></p>
-      <p class="muted">MIT licensed · v${esc(pkg.version)}</p>
+      <p class="muted">v${esc(pkg.version)}</p>
     </div>
     <ul class="footer-links">
       <li><a href="/how-it-works/">How it works</a></li>
       <li><a href="/icons/">All icons</a></li>
+      <li><a href="/roadmap/">Roadmap</a></li>
+      <li><a href="/changelog/">Changelog</a></li>
       <li><a href="https://github.com/matita-dev/icons">GitHub</a></li>
       <li><a href="https://www.npmjs.com/package/@matita/icons">npm</a></li>
       <li><a href="https://github.com/matita-dev/icons/issues/new?template=icon-request.yml">Request an icon</a></li>
       <li><a href="https://github.com/sponsors/ldons">Support Matita</a></li>
       <li><a href="mailto:hello@matita.dev">hello@matita.dev</a></li>
     </ul>
-    <p class="credit muted">Set in Geist, Geist Mono and Instrument Serif, under the SIL Open Font License (<a href="${p}fonts/LICENSE-geist-sans.txt">Geist</a>, <a href="${p}fonts/LICENSE-geist-mono.txt">Geist Mono</a>, <a href="${p}fonts/LICENSE-instrument-serif.txt">Instrument Serif</a>).</p>
+    <p class="credit muted"><span>Open source, MIT licensed, and it stays that way</span><span class="made-by">Made with <span class="made-by-ico" role="img" aria-label="love">${toSvg(icons.heart, { size: 16 })}</span> by <a href="https://herocreativ.com">herocreativ</a></span></p>
   </div>
 </footer>`;
 
@@ -301,7 +309,7 @@ ${siteHeader('')}
     ${eyebrow('01', 'Icons')}
     <div class="section-head">
       <h2 id="icons-title">The set</h2>
-      <p class="muted">Click an icon for its code. Size, stroke and colour are yours to change. Every icon also has <a href="/icons/">its own page</a>.</p>
+      <p class="muted">Click an icon for its code. Size, stroke and colour are yours to change. Every icon also has <a href="/icons/">its own page</a>. <a href="/changelog/">See what's new</a> in ${esc(history.latest)}.</p>
     </div>
 
     <div class="toolbar" aria-label="Icon controls">
@@ -337,7 +345,13 @@ ${siteHeader('')}
         <output id="seed-out">0</output>
         <button type="button" class="btn btn-sm" id="redraw">Redraw</button>
         <button type="button" class="btn btn-sm btn-icon" id="seed-reset" aria-label="Reset seed to 0" title="Reset seed to 0" disabled>${toSvg(icons['rotate-ccw'], { size: 16 })}</button>
-      </div>
+      </div>${HAS_WOBBLE ? `
+      <div class="ctl ctl-wobble">
+        <label for="wobble">Wobble</label>
+        <input id="wobble" type="range" min="0" max="1" step="0.05" value="1">
+        <output for="wobble" id="wobble-out">100%</output>
+        <button type="button" class="btn btn-sm" id="perfect" aria-pressed="false" title="Draw every icon as exact shapes (wobble 0)">Perfect</button>
+      </div>` : ''}
     </div>
 
     <p class="count" id="count" aria-live="polite">${n} icons</p>
@@ -363,6 +377,7 @@ ${grid}
         <dl class="detail-meta">
           <div><dt>Component</dt><dd id="d-comp">Ruler</dd></div>
           <div><dt>File</dt><dd id="d-file">icons/ruler.svg</dd></div>
+          <div><dt>Added in</dt><dd><a id="d-since" href="/changelog/#${anchor(history.since.ruler)}">v${history.since.ruler}</a></dd></div>
         </dl>
         <div class="seg seg-full" role="group" aria-label="Code format">
           <button type="button" data-fmt="react" aria-pressed="true">React</button>
@@ -440,7 +455,8 @@ document.body.append(createElement(Ruler, { size: 24, pencil: true }));`)}
           <tr><td><code>strokeWidth</code></td><td>number</td><td><code>1.6</code></td><td>Stroke width on the 24 grid. Every stroke scales with it.</td></tr>
           <tr><td><code>pencil</code></td><td>boolean</td><td><code>false</code></td><td>Pencil variant: every stroke drawn as two or three loose pencil lines. Pair with <code>pencil.css</code> for the paper grain.</td></tr>
           <tr><td><code>title</code></td><td>string</td><td>none</td><td>Accessible label. Without it the icon is <code>aria-hidden</code>.</td></tr>
-          <tr><td><code>seed</code></td><td>number</td><td><code>0</code></td><td><code>SketchIcon</code> only: a different drawing that always comes out the same for that seed.</td></tr>
+          <tr><td><code>seed</code></td><td>number</td><td><code>0</code></td><td><code>SketchIcon</code> only: a different drawing that always comes out the same for that seed.</td></tr>${HAS_WOBBLE ? `
+          <tr><td><code>wobble</code></td><td>number</td><td><code>1</code></td><td><code>SketchIcon</code> only: how much hand there is, from 0 (exact shapes: true lines, circles and corners) to 1 (the full drawing).</td></tr>` : ''}
         </tbody>
       </table>
     </div>
@@ -491,7 +507,6 @@ document.body.append(createElement(Ruler, { size: 24, pencil: true }));`)}
       <p class="seeds-l">Same name, same seed, same drawing: in SVG, React and the browser, on every machine. Change the seed for another take.</p>
       <div class="seed-row">${seeds}</div>
     </div>
-    <div class="used-actions page-cta"><a class="btn btn-primary" href="/how-it-works/">How it works, step by step ${ico('arrow-right', 16)}</a></div>
   </div>
 </section>
 
@@ -505,11 +520,11 @@ document.body.append(createElement(Ruler, { size: 24, pencil: true }));`)}
     <div class="variants">
       <figure class="frame variant">
         <figcaption class="frame-cap"><span>Fig. 02 · Ink</span><span class="frame-rule" aria-hidden="true"></span></figcaption>
-        <div class="variant-row">${demoRow('ink')}</div>
+        <div class="variant-row variant-grid">${demoRow('ink')}</div>
       </figure>
       <figure class="frame variant">
         <figcaption class="frame-cap"><span>Fig. 03 · Pencil</span><span class="frame-rule" aria-hidden="true"></span></figcaption>
-        <div class="variant-row">${demoRow('pencil')}</div>
+        <div class="variant-row variant-grid">${demoRow('pencil')}</div>
       </figure>
     </div>
     ${code('code-pencil', `import '@matita/icons/pencil.css';
@@ -519,9 +534,37 @@ import { Ruler } from '@matita/icons/react';
   </div>
 </section>
 
+<section class="section" id="follow" aria-labelledby="follow-title">
+  <div class="wrap">
+    ${eyebrow('05', 'Follow along')}
+    <div class="section-head">
+      <h2 id="follow-title">Watch it <em>grow</em></h2>
+      <p class="muted">New icons land in regular releases. See what just arrived, what is being built next, and how the pencil hand works.</p>
+    </div>
+    <div class="follow">
+      <article class="follow-card">
+        <h3>What's new in ${esc(history.latest)}</h3>
+        <p>${newIcons.length} new icons in the latest batch.</p>
+        <div class="follow-glyphs" aria-hidden="true">${newIcons.slice(0, 10).map(name => `<span title="${name}">${toSvg(icons[name], { size: 28 })}</span>`).join('')}</div>
+        <a class="follow-link" href="/changelog/">Read the changelog ${ico('arrow-right', 16)}</a>
+      </article>
+      <article class="follow-card">
+        <h3>Roadmap</h3>
+        <ul class="follow-road">${roadmapOpen(history).slice(0, 4).map(i => `<li><strong>${esc(i.title)}</strong>${i.when ? `<span>${esc(i.when.replace(/^Target: /, ''))}</span>` : ''}</li>`).join('')}</ul>
+        <a class="follow-link" href="/roadmap/">See where we are going ${ico('arrow-right', 16)}</a>
+      </article>
+      <article class="follow-card">
+        <h3>How it works</h3>
+        <p>Matita stores recipes, not drawings: a few shapes on a grid that a small program draws like a pencil. The same name always draws the same way.</p>
+        <a class="follow-link" href="/how-it-works/">How it works, step by step ${ico('arrow-right', 16)}</a>
+      </article>
+    </div>
+  </div>
+</section>
+
 <section class="section" id="used-in" aria-labelledby="used-title">
   <div class="wrap">
-    ${eyebrow('05', 'Used in')}
+    ${eyebrow('06', 'Used in')}
     <div class="section-head">
       <h2 id="used-title">Where Matita <em>shows up</em></h2>
       <p class="muted">Libraries and projects that ship Matita. Using it somewhere? Open an issue or write to <a href="mailto:hello@matita.dev">hello@matita.dev</a> and it can be listed here.</p>
@@ -557,20 +600,71 @@ ${siteFooter('')}
   await write('how-it-works/index.html', howHtml);
 
   /* one page per icon + the /icons/ hub */
-  const iconPages = buildIconPages({ icons, names, DEFS, drawIcon, hash, toSvg, toSvgInner, esc, code, eyebrow, siteHeader, siteFooter, pascal, pkg })
+  const iconPages = buildIconPages({ icons, names, DEFS, drawIcon, hash, toSvg, toSvgInner, esc, code, eyebrow, siteHeader, siteFooter, pascal, pkg, history, newBadge, anchor, HAS_WOBBLE })
     .map(p => ({ ...p, html: external(p.html) }));
   for (const p of iconPages) await write(p.file, p.html);
+  const changelogHtml = external(changelogPage({ history, icons, toSvg, esc, eyebrow, siteHeader, siteFooter }));
+  await write('changelog/index.html', changelogHtml);
+  const roadmapHtml = external(roadmapPage({ history, esc, eyebrow, siteHeader, siteFooter, count: n }));
+  await write('roadmap/index.html', roadmapHtml);
+
+  /* For AI tools and scripts: /icons.json is the machine-readable list of every icon (name, component, the version that
+     added it), and /llms.txt is a short plain-text guide that points at it. Both come from the same data as the pages,
+     so they always list exactly what the pinned package ships. */
+  const latestNew = names.filter(name => history.isNew(name));
+  await write('icons.json', JSON.stringify({
+    name: '@matita/icons', version: pkg.version, count: n, site: SITE, license: 'MIT',
+    install: 'npm i @matita/icons',
+    usage: { react: "import { Ruler } from '@matita/icons/react'; <Ruler size={24} />", byName: "import { SketchIcon } from '@matita/icons/react'; <SketchIcon name=\"ruler\" />", js: "import { Ruler, toSvg } from '@matita/icons'; toSvg(Ruler, { size: 24 })" },
+    latestRelease: { version: history.latest, icons: latestNew },
+    icons: names.map(name => ({ name, component: pascal(name), since: history.since[name], url: `${SITE}icons/${name}/`, svg: `@matita/icons/icons/${name}.svg` }))
+  }, null, 2) + '\n');
+  await write('llms.txt', `# Matita icons
+
+> ${n} pencil-style icons for the web, as SVG files and React components. Each icon is a short recipe of simple shapes on a 24 grid that code draws like a pencil would. The same name always draws the same way. MIT licensed. Current version: ${pkg.version}.
+
+Use only the icon names listed below. Names are lowercase kebab-case and the React component is the PascalCase form (\`arrow-right\` is \`ArrowRight\`). If an icon you need is not in the list, it does not exist yet: pick the closest one or ask for it at https://github.com/matita-dev/icons/issues/new?template=icon-request.yml.
+
+## Install and use
+
+- Install: \`npm i @matita/icons\`
+- React: \`import { Ruler } from '@matita/icons/react'; <Ruler size={24} />\`
+- By name: \`import { SketchIcon } from '@matita/icons/react'; <SketchIcon name="ruler" />\`
+- Plain JavaScript: \`import { Ruler, toSvg } from '@matita/icons'; toSvg(Ruler, { size: 24 })\`
+- Props: \`size\` (px, default 16), \`color\` (default currentColor), \`strokeWidth\` (default 1.6 on the 24 grid), \`pencil\` (loose pencil variant, pair with \`@matita/icons/pencil.css\`), \`title\` (accessible label; without it the icon is decorative). \`SketchIcon\` also takes \`seed\`${HAS_WOBBLE ? ' and `wobble` (0 = exact shapes, 1 = the full hand, default 1)' : ''}.
+- Plain files: \`@matita/icons/icons/<name>.svg\`, \`@matita/icons/pencil/<name>.svg\`${HAS_WOBBLE ? ', `@matita/icons/exact/<name>.svg`' : ''}, \`@matita/icons/sprite.svg\`
+
+## Machine-readable
+
+- [Every icon as JSON](${SITE}icons.json): name, component name and the version that added it
+- [Changelog](${SITE}changelog/): which icons each release added
+- [Roadmap](${SITE}roadmap/): what is being built and what comes next
+
+## Pages
+
+- [All ${n} icons](${SITE}icons/): every icon has its own page with code to copy
+- [How it works](${SITE}how-it-works/)
+- [GitHub](https://github.com/matita-dev/icons) and [npm](https://www.npmjs.com/package/@matita/icons)
+
+## Added in ${history.latest}
+
+${latestNew.join(', ')}
+
+## All ${n} icons
+
+${names.join(', ')}
+`);
 
   /* sitemap: every page on the site */
   await write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${
-    [SITE, SITE + 'how-it-works/', ...iconPages.map(p => p.url)].map(u => `  <url><loc>${u}</loc></url>`).join('\n')}\n</urlset>\n`);
+    [SITE, SITE + 'how-it-works/', SITE + 'changelog/', SITE + 'roadmap/', ...iconPages.map(p => p.url)].map(u => `  <url><loc>${u}</loc></url>`).join('\n')}\n</urlset>\n`);
 
   /* _headers (Cloudflare static assets): security headers on everything, long caching for files that never change.
      The page is plain HTML + one external script per page, so the policy can be strict. The only inline script is the
      one-liner that adds the `js` class; it is allowed by hash, so a CSP check here fails the build if it is edited.
      Not set here: HSTS (Cloudflare dashboard), and no Cross-Origin-Resource-Policy, because the README hot-links set.png. */
   const INLINE_JS = "document.documentElement.className+=' js'";
-  for (const [name, page] of [['index.html', html], ['how-it-works/index.html', howHtml], ...iconPages.map(p => [p.file, p.html])])
+  for (const [name, page] of [['index.html', html], ['how-it-works/index.html', howHtml], ['changelog/index.html', changelogHtml], ['roadmap/index.html', roadmapHtml], ...iconPages.map(p => [p.file, p.html])])
     if (!page.includes(`<script>${INLINE_JS}</script>`)) throw new Error(`${name}: the inline script no longer matches the CSP hash in build.mjs`);
   const csp = [
     "default-src 'self'", `script-src 'self' 'sha256-${createHash('sha256').update(INLINE_JS).digest('base64')}'`, "style-src 'self'",
@@ -580,9 +674,9 @@ ${siteFooter('')}
   /* The CSP goes on HTML pages only. On everything (it used to be on /*) it also hit sitemap.xml, and the browser's own
      XML viewer needs inline styles, so the sitemap showed as one run of text. Every page the build writes must sit under
      one of these patterns; the check below fails the build otherwise. */
-  const CSP_PATHS = ['/', '/how-it-works/*', '/icons/*'];
+  const CSP_PATHS = ['/', '/how-it-works/*', '/changelog/*', '/roadmap/*', '/icons/*'];
   const covered = u => CSP_PATHS.some(p => p.endsWith('*') ? u.startsWith(p.slice(0, -1)) : u === p);
-  for (const u of ['/', '/how-it-works/', ...iconPages.map(p => p.url.replace(SITE, '/'))])
+  for (const u of ['/', '/how-it-works/', '/changelog/', '/roadmap/', ...iconPages.map(p => p.url.replace(SITE, '/'))])
     if (!covered(u)) throw new Error(`${u}: not covered by a Content-Security-Policy rule in _headers (CSP_PATHS in build.mjs)`);
   await write('_headers', `/*
   X-Content-Type-Options: nosniff
@@ -610,6 +704,13 @@ ${CSP_PATHS.map(p => `${p}\n  Content-Security-Policy: ${csp}`).join('\n')}
   ${small}
 /favicon.svg
   ${small}
+/llms.txt
+  ${small}
+  Content-Type: text/plain; charset=utf-8
+/icons.json
+  ${small}
+  Content-Type: application/json; charset=utf-8
+  Access-Control-Allow-Origin: *
 `);
   console.log(`site built with ${pkg.name}@${pkg.version}${LOCAL ? ' (local ../dist)' : ''}, ${n} icons`);
 }

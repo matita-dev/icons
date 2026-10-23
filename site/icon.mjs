@@ -19,11 +19,11 @@ const titleOf = n => n.replace(/-/g, ' ').replace(/^./, c => c.toUpperCase());
 const clip = (s, max) => s.length <= max ? s : s.slice(0, s.lastIndexOf(' ', max - 1)).replace(/[,;:]$/, '') + '.';
 
 export function buildIconPages(ctx) {
-  const { icons, names, DEFS, drawIcon, hash, toSvg, toSvgInner, esc, code, eyebrow, siteHeader, siteFooter, pascal, pkg } = ctx;
+  const { icons, names, DEFS, drawIcon, hash, toSvg, toSvgInner, esc, code, eyebrow, siteHeader, siteFooter, pascal, pkg, history, newBadge, anchor, HAS_WOBBLE } = ctx;
   const sorted = [...names].sort();
   const pos = Object.fromEntries(sorted.map((n, i) => [n, i]));
   const url = n => `${SITE}icons/${n}/`;
-  const tile = n => `<li><a class="icon-btn" href="/icons/${n}/"><span class="glyph">${toSvg(icons[n], { size: 24 })}</span><span class="icon-name">${n}</span></a></li>`;
+  const tile = n => `<li><a class="icon-btn" href="/icons/${n}/"><span class="glyph">${toSvg(icons[n], { size: 24 })}</span><span class="icon-name">${n}</span>${newBadge(n)}</a></li>`;
 
   /* related: icons that share a word in the name first, then the neighbours in the set's own order (the set is grouped by
      theme: calendar sits next to clock, mail and user), which is a better "similar" than the alphabet */
@@ -74,6 +74,7 @@ ${siteFooter('/')}
     const prev = sorted[(pos[name] + sorted.length - 1) % sorted.length], next = sorted[(pos[name] + 1) % sorted.length];
     const seeds = [0, 1, 2, 3, 4].map(s => `<figure class="seed"><span class="ico">${toSvg(drawIcon(name, { seed: s }), { size: 56 })}</span><figcaption>seed ${s}</figcaption></figure>`).join('');
     const sizes = [16, 20, 24, 32, 48, 96].map(px => `<figure class="seed"><span class="ico">${toSvg(icons[name], { size: px })}</span><figcaption>${px} px</figcaption></figure>`).join('');
+    const wobbles = HAS_WOBBLE ? [0, .25, .5, .75, 1].map(w => `<figure class="seed"><span class="ico">${toSvg(drawIcon(name, { wobble: w }), { size: 56 })}</span><figcaption>wobble ${w}</figcaption></figure>`).join('') : '';
     const recipe = src.split(';').map(s => s.trim()).join(';\n');
 
     const main = `<section class="hero" aria-labelledby="icon-title">
@@ -81,6 +82,7 @@ ${siteFooter('/')}
     <div class="hero-copy">
       <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Matita</a><span aria-hidden="true">/</span><a href="/icons/">Icons</a><span aria-hidden="true">/</span><span aria-current="page">${esc(name)}</span></nav>
       <h1 id="icon-title">${esc(T)} <em>icon</em></h1>
+      <p class="since">${history.isNew(name) ? '<span class="badge-new badge-inline">New</span> ' : ''}Added in <a href="/changelog/#${anchor(history.since[name])}">v${esc(history.since[name])}</a></p>
       <p class="lead">A free pencil-style ${esc(name.replace(/-/g, ' '))} icon, drawn by code from ${sh}. Use it as an SVG, a React component, or by name. MIT licensed.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="#use">Copy the code</a>
@@ -163,6 +165,10 @@ ${siteFooter('/')}
       <div class="seed-row">${seeds}</div>
       <p class="seeds-l">Five seeds of ${esc(name)}. Seed 0 is the default.</p>
     </div>
+    ${HAS_WOBBLE ? `<div class="seeds">
+      <div class="seed-row">${wobbles}</div>
+      <p class="seeds-l">${esc(name)} from exact shapes (wobble 0) to the full hand (wobble 1, the default). The exact version is also a ready-made file: <code>exact/${esc(name)}.svg</code>.</p>
+    </div>` : ''}
     <div class="seeds">
       <div class="seed-row sizes">${sizes}</div>
       <p class="seeds-l">True pixel sizes.</p>
