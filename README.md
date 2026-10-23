@@ -2,7 +2,7 @@
 
 Pencil-style icons for the web, drawn by code. Lines overshoot their ends like ruled pencil strokes, boxes cross at the corners, circles overlap where the pen closes, or stop just short. Every glyph is deterministic: the same name always draws the same way.
 
-[![All Matita icons on graph paper](https://matita.dev/set.png)](https://matita.dev)
+[![All Matita icons on graph paper](https://matita.dev/set.png?v=0.4.0)](https://matita.dev)
 
 Browse, search and copy them at [matita.dev](https://matita.dev).
 
