@@ -178,7 +178,7 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
       { '@type': 'WebSite', '@id': SITE + '#website', url: SITE, name: 'Matita', inLanguage: 'en' },
       {
         '@type': 'SoftwareSourceCode', '@id': SITE + '#icons', url: SITE, name: 'Matita icons',
-        description: '200+ pencil-style icons as SVG and React components, drawn by code from simple shapes. MIT licensed.',
+        description: '260+ pencil-style icons as SVG and React components, drawn by code from simple shapes. MIT licensed.',
         codeRepository: 'https://github.com/matita-dev/icons', programmingLanguage: 'JavaScript',
         license: 'https://opensource.org/licenses/MIT', version: pkg.version, isPartOf: { '@id': SITE + '#website' },
         publisher: {
@@ -244,17 +244,17 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Matita · pencil-style icons for React and the web</title>
-<meta name="description" content="200+ pencil-style icons as SVG and React components, drawn by code. Strokes overshoot, corners cross, circles overlap where the pen closes. Free and MIT licensed.">
+<meta name="description" content="260+ pencil-style icons as SVG and React components, drawn by code. Strokes overshoot, corners cross, circles overlap where the pen closes. Free and MIT licensed.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:title" content="Matita · pencil-style icons">
-<meta property="og:description" content="200+ pencil-style icons for the web, drawn by code. MIT licensed.">
+<meta property="og:description" content="260+ pencil-style icons for the web, drawn by code. MIT licensed.">
 <meta property="og:url" content="https://matita.dev/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Matita">
 <meta property="og:image" content="https://matita.dev/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Matita: ruled by the grid, sketched by code. 200+ pencil-style icons for the web.">
+<meta property="og:image:alt" content="Matita: ruled by the grid, sketched by code. 260+ pencil-style icons for the web.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://matita.dev/">
 <script type="application/ld+json">${jsonLd}</script>
@@ -279,7 +279,7 @@ ${siteHeader('')}
     <div class="hero-copy">
       ${eyebrow('00', 'Pencil-style icons for the web')}
       <h1 id="hero-title">Ruled by the grid.<br>Sketched by <em>code</em>.</h1>
-      <p class="lead">200+ pencil-style icons as SVG and React components. Each one is a few simple shapes that code draws like a pencil would: lines overshoot their ends, boxes cross at the corners and circles overlap where the pen closes. The same name always draws the same way, everywhere.</p>
+      <p class="lead">260+ pencil-style icons as SVG and React components. Each one is a few simple shapes that code draws like a pencil would: lines overshoot their ends, boxes cross at the corners and circles overlap where the pen closes. The same name always draws the same way, everywhere.</p>
       <div class="install-line">
         <code id="hero-install">npm i @matita/icons</code>
         <button class="btn btn-sm copy" type="button" data-copy-target="hero-install">Copy</button>
@@ -289,7 +289,7 @@ ${siteHeader('')}
         <a class="btn" href="https://github.com/matita-dev/icons">View source</a>
       </div>
       <ul class="facts" aria-label="Facts">
-        <li>200+ glyphs</li><li>24 grid</li><li>1.6 stroke</li><li>currentColor</li><li>MIT</li>
+        <li>260+ glyphs</li><li>24 grid</li><li>1.6 stroke</li><li>currentColor</li><li>MIT</li>
       </ul>
     </div>
     <div class="hero-fig">
