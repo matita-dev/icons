@@ -21,6 +21,7 @@ Glyphs are drafting primitives on a 24 grid in `src/defs.js`, separated by `;`:
 | `E` | ellipse | `cx cy rx ry` |
 | `A` | arc | `cx cy r a0 a1` (degrees, 0 = +x, 90 = down) |
 | `Q` | quadratic curve | `x1 y1 cx cy x2 y2` |
+| `B` | one curved line (pen-tool path) | `x y  c1x c1y c2x c2y x y  …` a start point, then per segment two curve handles and the end point |
 | `O` | dot | `cx cy` |
 
 Guidelines:

@@ -93,7 +93,7 @@ export declare const names: SketchIconName[];
 ${names.map(n => `export declare const ${pascal(n)}: SketchIconData;\nexport declare const ${pascal(n)}Icon: SketchIconData;`).join('\n')}
 `);
 await write(dist('esm/engine.d.ts'), `import type { SketchIconData } from './index.js';
-/** Built-in glyph sources: drafting primitives on a 24 grid (L line · P polyline · Z closed · R rect · C circle · E ellipse · A arc · Q curve · O dot). */
+/** Built-in glyph sources: drafting primitives on a 24 grid (L line · P polyline · Z closed · R rect · C circle · E ellipse · A arc · Q curve · B Bezier path · O dot). */
 export declare const DEFS: Record<string, string>;
 export declare const names: string[];
 /** Draw a glyph. Pass your own \`defs\` to draw custom icons in the same hand; \`seed\` gives a different drawing;
