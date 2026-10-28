@@ -56,6 +56,14 @@ export function sketchify(src, r, wobble = 1) {
     const a = J([x1, y1]), c = J([cx, cy]), b = J([x2, y2]), t = (p, q, e) => { const L = Math.hypot(p[0] - q[0], p[1] - q[1]) || 1; return [p[0] + (p[0] - q[0]) / L * e, p[1] + (p[1] - q[1]) / L * e]; };
     return 'M' + pt(t(a, c, S(.15 + r() * .3))) + 'Q' + pt(c) + ' ' + pt(t(b, c, S(.15 + r() * .3)));
   };
+  const bez = P => {
+    P = P.map(J); const n = P.length, t = (a, b) => { const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; return [(b[0] - a[0]) / L, (b[1] - a[1]) / L]; };
+    const e0 = S(.15 + r() * .4), e1 = S(.15 + r() * .4), d0 = t(P[1], P[0]), d1 = t(P[n - 2], P[n - 1]);
+    P[0] = [P[0][0] + d0[0] * e0, P[0][1] + d0[1] * e0]; P[n - 1] = [P[n - 1][0] + d1[0] * e1, P[n - 1][1] + d1[1] * e1];
+    let d = 'M' + pt(P[0]);
+    for (let i = 1; i + 2 < n; i += 3) d += 'C' + pt(P[i]) + ' ' + pt(P[i + 1]) + ' ' + pt(P[i + 2]);
+    return d;
+  };
   let s = '', o = ''; const out = [];
   for (const part of src.split(';')) {
     const before = s; const k = part.trim()[0], v = part.trim().slice(1).trim().split(/\s+/).map(Number), pts = [];
@@ -63,6 +71,7 @@ export function sketchify(src, r, wobble = 1) {
     if (k === 'L') s += line(...v); else if (k === 'P') s += poly(pts, false); else if (k === 'Z') s += poly(pts, true);
     else if (k === 'R') { const [x, y, w, h] = v; const ov = 1.15; s += line(x, y, x + w, y, ov) + line(x + w, y, x + w, y + h, ov) + line(x + w, y + h, x, y + h, ov) + line(x, y + h, x, y, ov); }
     else if (k === 'C') s += ring(v[0], v[1], v[2], v[2]); else if (k === 'E') s += ring(v[0], v[1], v[2], v[3]); else if (k === 'A') s += arc(...v); else if (k === 'Q') s += quad(...v);
+    else if (k === 'B') s += bez(pts);
     else if (k === 'O') { const p = J([v[0], v[1]]); o += 'M' + pt(p) + 'l.01 0'; }
     if (s !== before) out.push({ d: s.slice(before.length), w: f(K === 1 ? .86 + r() * .28 : 1 + (.86 + r() * .28 - 1) * K) });
   }
@@ -86,6 +95,7 @@ export function exact(src) {
       d = `M${at(a0)}A${f(R)} ${f(R)} 0 ${Math.abs(a1 - a0) > 180 ? 1 : 0} ${a1 > a0 ? 1 : 0} ${at(a1)}`;
     }
     else if (k === 'Q') d = 'M' + pts[0] + 'Q' + pts[1] + ' ' + pts[2];
+    else if (k === 'B') { d = 'M' + pts[0]; for (let i = 1; i + 2 < pts.length; i += 3) d += 'C' + pts[i] + ' ' + pts[i + 1] + ' ' + pts[i + 2]; }
     else if (k === 'O') o += 'M' + pts[0] + 'l.01 0';
     if (d) out.push({ d, w: 1 });
   }

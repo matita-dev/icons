@@ -87,3 +87,14 @@ test('custom glyphs draw in the same hand', () => {
   const T = R.createSketchIcon(drawIcon('t-square', { defs: { 't-square': 'L 4 5 20 5;L 12 5 12 20' } }));
   assert.match(renderToStaticMarkup(h(T)), /sketch-icon-t-square/);
 });
+
+test('B draws one Bezier line: exact at wobble 0, a hand at 1, deterministic', () => {
+  const defs = { bow: 'B 4 12 4 6 20 6 20 12 20 18 4 18 4 12' };
+  assert.equal(drawIcon('bow', { defs, wobble: 0 }).ink[0][0], 'M4 12C4 6 20 6 20 12C20 18 4 18 4 12');
+  const hand = drawIcon('bow', { defs });
+  assert.equal(hand.ink.length, 1, 'one stroke');
+  assert.match(hand.ink[0][0], /^M[\d. ]+C[\d. ]+C[\d. ]+$/);
+  assert.notEqual(hand.ink[0][0], drawIcon('bow', { defs, wobble: 0 }).ink[0][0]);
+  assert.deepEqual(hand, drawIcon('bow', { defs }));
+  assert.notDeepEqual(hand.ink, drawIcon('bow', { defs, seed: 3 }).ink);
+});

@@ -66,7 +66,7 @@ Exact shapes don't depend on the seed, and wobble 1 draws exactly what 0.3.0 dre
 
 Glyphs are drafting primitives on a 24 grid in `src/defs.js`:
 
-`L` line · `P` polyline · `Z` closed · `R` rect · `C` circle · `E` ellipse · `A` arc · `Q` curve · `O` dot
+`L` line · `P` polyline · `Z` closed · `R` rect · `C` circle · `E` ellipse · `A` arc · `Q` curve · `B` Bezier path · `O` dot
 
 Keep to 2–5 primitives, stay inside the 1–23 grid, no fills, short descriptive kebab-case names. Then `npm run build && npm test`.
 
