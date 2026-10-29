@@ -90,6 +90,7 @@ test('icons are aria-hidden only when no label or role is passed', () => {
   const cases = [
     { name: 'none', attrs: {}, hidden: true, role: undefined },
     { name: 'aria-label', attrs: { 'aria-label': 'Delete' }, hidden: false, role: 'img' },
+    { name: 'empty aria-label', attrs: { 'aria-label': '' }, hidden: true, role: undefined },
     { name: 'aria-labelledby', attrs: { 'aria-labelledby': 'trash-label' }, hidden: false, role: 'img' },
     { name: 'own role', attrs: { role: 'presentation' }, hidden: false, role: 'presentation' }
   ];

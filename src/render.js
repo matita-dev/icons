@@ -17,7 +17,7 @@ export function iconPaths(icon, { strokeWidth = DEFAULTS.strokeWidth, pencil = f
 
 /** Accessibility attributes the caller set: an icon with any of these isn't decorative, so it isn't aria-hidden. */
 export const a11yAttrs = (attrs = {}) => {
-  const set = k => attrs[k] !== undefined && attrs[k] !== null && attrs[k] !== false;
+  const set = k => attrs[k] !== undefined && attrs[k] !== null && attrs[k] !== false && attrs[k] !== '';
   return {
     labelled: set('aria-label') || set('aria-labelledby'),
     any: Object.keys(attrs).some(k => (k.startsWith('aria-') || k === 'role') && set(k))
