@@ -6,7 +6,7 @@ Pencil-style icons for the web, drawn by code. Lines overshoot their ends like r
 
 Browse, search and copy them at [matita.dev](https://matita.dev).
 
-- 260 glyphs · 24 grid · 1.6 stroke · `currentColor`
+- 281 glyphs · 24 grid · 1.6 stroke · `currentColor`
 - Plain, descriptive kebab-case names (`arrow-right`, `trash-2`, `circle-check`)
 - Stroke-based, so color and stroke width stay yours to change
 - Pencil variant: every stroke drawn as two or three loose pencil lines, with paper grain

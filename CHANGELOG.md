@@ -2,6 +2,17 @@
 
 Changes to `@matita/icons`. While the package is on 0.x, a minor version adds glyphs and a patch fixes things.
 
+## 0.5.0 — unreleased
+
+21 new glyphs (260 → 281), a new `B` primitive for curved lines, and ten glyphs redrawn.
+
+- **Faces:** meh, frown, laugh, angry, surprised
+- **Math:** infinity, square-root, plus-minus
+- **Science:** beaker, magnet, telescope, orbit, planet, molecule, virus, bacteria
+- **Medical and biology:** cell, petri-dish, first-aid-kit, prescription, prescription-2
+- **New: `B` primitive.** One curved line made of cubic Bezier segments (a start point, then per segment two curve handles and the end point), for custom glyphs and built-in ones. It draws as exact shapes at wobble 0 and in the same hand as the other primitives otherwise. Every other glyph draws exactly as in 0.4.0.
+- Ten glyphs are redrawn (pill now has dots in one half, and key, keyboard, hard-drive, car, lightbulb, at-sign, hammer, brush and bone have new drawings).
+
 ## 0.4.0 — 2026-10-23
 
 60 new glyphs (200 → 260) and a wobble setting that goes all the way down to exact shapes.
