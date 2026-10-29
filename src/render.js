@@ -15,16 +15,28 @@ export function iconPaths(icon, { strokeWidth = DEFAULTS.strokeWidth, pencil = f
   return out;
 }
 
+/** Accessibility attributes the caller set: an icon with any of these isn't decorative, so it isn't aria-hidden. */
+export const a11yAttrs = (attrs = {}) => {
+  const set = k => attrs[k] !== undefined && attrs[k] !== null && attrs[k] !== false;
+  return {
+    labelled: set('aria-label') || set('aria-labelledby'),
+    any: Object.keys(attrs).some(k => (k.startsWith('aria-') || k === 'role') && set(k))
+  };
+};
+
 /** Root <svg> attributes. */
 export function iconAttrs(icon, opts = {}) {
   const { size = DEFAULTS.size, color = DEFAULTS.color, strokeWidth = DEFAULTS.strokeWidth, pencil = false, title, class: cls } = opts;
+  const own = a11yAttrs(opts.attrs);
   const a = {
     xmlns: 'http://www.w3.org/2000/svg', viewBox: '0 0 24 24', width: size, height: size, fill: 'none', stroke: color,
     'stroke-width': strokeWidth, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', overflow: 'visible',
     class: ['sketch-icon', 'sketch-icon-' + icon.name, cls].filter(Boolean).join(' '), 'data-sketch': ''
   };
   if (pencil) a['data-sketch-pencil'] = '';
-  if (title) { a.role = 'img'; a['aria-label'] = title; } else a['aria-hidden'] = 'true';
+  if (title) { a.role = 'img'; a['aria-label'] = title; }
+  else if (own.labelled) a.role = 'img';
+  else if (!own.any) a['aria-hidden'] = 'true';
   return a;
 }
 
