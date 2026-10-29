@@ -17,7 +17,11 @@ test('every glyph is exported in every format', async () => {
     assert.match(await readFile(new URL(`../dist/svg/${n}.svg`, import.meta.url), 'utf8'), /^<svg [^>]*viewBox="0 0 24 24"/);
     assert.match(await readFile(new URL(`../dist/svg-pencil/${n}.svg`, import.meta.url), 'utf8'), /data-sketch-pencil=""[^>]*><defs><filter id="matita-grain"[^]*<g filter="url\(#matita-grain\)">[^]*<\/g><\/svg>/);
   }
-  assert.match(await readFile(new URL('../dist/pencil.css', import.meta.url), 'utf8'), /mask-image:url\("data:image\/svg\+xml,/);
+  const css = await readFile(new URL('../dist/pencil.css', import.meta.url), 'utf8');
+  assert.match(css, /mask-image:url\("data:image\/svg\+xml,/);
+  // --matita-grain adds a solid layer with opacity 1 - grain; it defaults to 1, so the default look is the full grain
+  assert.match(css, /mask-image:url\("data:image\/svg\+xml,[^"]+"\),linear-gradient\(rgb\(0 0 0 \/ calc\(1 - var\(--matita-grain, 1\)\)\)/);
+  assert.match(css, /mask-composite:add/);
 });
 
 test('svg files are well-formed XML: every attribute has a quoted value', async () => {

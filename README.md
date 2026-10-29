@@ -62,6 +62,16 @@ toSvg(drawIcon('calendar', { wobble: 0 }), { size: 24 });
 
 Exact shapes don't depend on the seed, and wobble 1 draws exactly what 0.3.0 drew. Ready-made exact files are in `@matita/icons/exact/<name>.svg`.
 
+## Grain: from solid lines to paper texture
+
+With `pencil.css` loaded, the `--matita-grain` CSS variable sets how much paper grain shows in pencil icons: 1 (the default) is the full grain, 0 is a solid line. Set it anywhere, on an icon or a parent.
+
+```css
+.toolbar { --matita-grain: 0.5; }
+```
+
+Without `pencil.css` there's no grain, so the variable does nothing. The `pencil/<name>.svg` files keep their built-in grain.
+
 ## Add an icon
 
 Glyphs are drafting primitives on a 24 grid in `src/defs.js`:
