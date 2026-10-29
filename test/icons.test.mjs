@@ -87,6 +87,41 @@ test('React components render and honour props + provider', () => {
   assert.ok(R.SketchIcon.has('set-square'));
 });
 
+test('icons are aria-hidden only when no label or role is passed', () => {
+  // minimal stand-in for a DOM document: createElement only needs createElementNS/setAttribute/appendChild
+  const doc = { createElementNS: (_, tag) => ({ tag, attrs: {}, children: [], textContent: '',
+    setAttribute(k, v) { this.attrs[k] = v; }, appendChild(c) { this.children.push(c); } }) };
+  const cases = [
+    { name: 'none', attrs: {}, hidden: true, role: undefined },
+    { name: 'aria-label', attrs: { 'aria-label': 'Delete' }, hidden: false, role: 'img' },
+    { name: 'empty aria-label', attrs: { 'aria-label': '' }, hidden: true, role: undefined },
+    { name: 'aria-labelledby', attrs: { 'aria-labelledby': 'trash-label' }, hidden: false, role: 'img' },
+    { name: 'own role', attrs: { role: 'presentation' }, hidden: false, role: 'presentation' }
+  ];
+  for (const { name, attrs, hidden, role } of cases) {
+    const svg = lib.toSvg(lib.Trash, { attrs });
+    const el = lib.createElement(lib.Trash, { attrs }, doc);
+    const jsx = renderToStaticMarkup(h(R.Trash, attrs));
+    for (const [out, s] of [['toSvg', svg], ['React', jsx]]) {
+      assert.equal(/aria-hidden="true"/.test(s), hidden, `${out} / ${name}: aria-hidden`);
+      assert.equal(s.match(/role="([^"]+)"/)?.[1], role, `${out} / ${name}: role`);
+    }
+    assert.equal(el.attrs['aria-hidden'] === 'true', hidden, `createElement / ${name}: aria-hidden`);
+    assert.equal(el.attrs.role, role, `createElement / ${name}: role`);
+  }
+
+  // title labels the icon and renders a <title> child in every output
+  const titled = renderToStaticMarkup(h(R.Trash, { title: 'Delete' }));
+  assert.match(titled, /role="img" aria-label="Delete"/);
+  assert.doesNotMatch(titled, /aria-hidden/);
+  assert.match(titled, /<title>Delete<\/title>/);
+  assert.match(lib.toSvg(lib.Trash, { title: 'Delete' }), /role="img" aria-label="Delete"><title>Delete<\/title>/);
+  const el = lib.createElement(lib.Trash, { title: 'Delete' }, doc);
+  assert.equal(el.attrs['aria-label'], 'Delete');
+  assert.equal(el.attrs['aria-hidden'], undefined);
+  assert.equal(el.children[0].tag, 'title');
+});
+
 test('custom glyphs draw in the same hand', () => {
   const T = R.createSketchIcon(drawIcon('t-square', { defs: { 't-square': 'L 4 5 20 5;L 12 5 12 20' } }));
   assert.match(renderToStaticMarkup(h(T)), /sketch-icon-t-square/);
