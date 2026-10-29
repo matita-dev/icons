@@ -70,17 +70,22 @@ function hairline(segs, r, off, drift, tIn, tOut) {
 }
 
 /** [path d, width multiplier, opacity] for every pencil line of an icon. Long strokes get three lines, short ones two;
-    each sits up to about 0.5 off the stroke, drifts a little, and starts and stops at its own place. */
-export function pencilLines(icon) {
-  if (cache.has(icon)) return cache.get(icon);
+    each sits up to about 0.5 off the stroke, drifts a little, and starts and stops at its own place.
+    `rough` (0 to 1, default 0) makes the lines wider, looser and a little lighter, with one more line per stroke
+    from 0.75 up. It only changes the pencil texture, not the shape: that's `wobble`. 0 draws exactly what it did before. */
+export function pencilLines(icon, rough = 0) {
+  rough = Math.min(1, Math.max(0, +rough || 0));
+  let byRough = cache.get(icon);
+  if (!byRough) cache.set(icon, byRough = new Map());
+  if (byRough.has(rough)) return byRough.get(rough);
   const r = prng(hash(icon.name + ':sketchy')), out = [];
   for (const [d, w] of icon.ink) for (const segs of subpaths(d)) {
-    const L = segs.reduce((a, s) => a + len(s[s.length - 1][0] - s[1][0], s[s.length - 1][1] - s[1][1]), 0), n = L > 3 ? 3 : 2, trim = Math.min(1.2, L * .12);
+    const L = segs.reduce((a, s) => a + len(s[s.length - 1][0] - s[1][0], s[s.length - 1][1] - s[1][1]), 0), n = (L > 3 ? 3 : 2) + (rough >= .75 ? 1 : 0), trim = Math.min(1.2, L * .12);
     for (let k = 0; k < n; k++) {
-      const off = (k - (n - 1) / 2) * .42 + (r() - .5) * .2, drift = (r() - .5) * .45, tIn = r() * trim, tOut = r() * trim;
-      out.push([hairline(segs, r, off, drift, tIn, tOut), w * .5, Math.round((.62 + r() * .25) * 100) / 100]);
+      const off = (k - (n - 1) / 2) * (.42 + .06 * rough) + (r() - .5) * (.2 + .12 * rough), drift = (r() - .5) * .45, tIn = r() * trim, tOut = r() * trim;
+      out.push([hairline(segs, r, off, drift, tIn, tOut), w * (.5 + .18 * rough), Math.round((.62 - .12 * rough + r() * (.25 + .1 * rough)) * 100) / 100]);
     }
   }
-  cache.set(icon, out);
+  byRough.set(rough, out);
   return out;
 }

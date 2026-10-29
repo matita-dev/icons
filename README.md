@@ -72,6 +72,25 @@ With `pencil.css` loaded, the `--matita-grain` CSS variable sets how much paper 
 
 Without `pencil.css` there's no grain, so the variable does nothing. The `pencil/<name>.svg` files keep their built-in grain.
 
+## Rough: from pencil to crayon
+
+`rough` goes from 0 (the default: today's pencil) to 1 (crayon-rough). It only changes the pencil texture: the lines get wider, looser and a little lighter, and with `pencil.css` the paper gets coarser, with more of it showing through. `wobble` is the one that bends the shape, so the two combine freely.
+
+```jsx
+<SketchIcon name="star" pencil rough={0.5} />
+<SketchIconProvider pencil rough={1}>…</SketchIconProvider>
+```
+
+```js
+toSvg(Star, { pencil: true, rough: 1 });
+```
+
+```html
+<i data-sketch-icon="star" data-pencil data-rough="0.5"></i>
+```
+
+`rough` only applies to pencil icons. `pencil.css` has two coarser paper textures and picks the nearest one, and `--matita-grain` still dials the grain on top. At 16px, 1 is about as rough as stays readable. The `pencil/<name>.svg` files are unchanged.
+
 ## Add an icon
 
 Glyphs are drafting primitives on a 24 grid in `src/defs.js`:

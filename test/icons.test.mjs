@@ -122,6 +122,50 @@ test('icons are aria-hidden only when no label or role is passed', () => {
   assert.equal(el.children[0].tag, 'title');
 });
 
+test('rough: 0 is the pencil as before, up to 1 is wider and looser, deterministic, pencil only', async () => {
+  const count = s => (s.match(/<path /g) || []).length;
+  const widths = s => [...s.matchAll(/<path [^>]*stroke-width="([\d.]+)"/g)].map(m => +m[1]);
+  for (const icon of [lib.Search, lib.Calendar, lib.Star]) {
+    const base = lib.toSvg(icon, { pencil: true });
+    assert.equal(lib.toSvg(icon, { pencil: true, rough: 0 }), base);
+    assert.equal(lib.toSvg(icon, { pencil: true, rough: 1 }), lib.toSvg(icon, { pencil: true, rough: 1 }));
+    const rough = lib.toSvg(icon, { pencil: true, rough: 1 });
+    assert.ok(count(rough) > count(base), `${icon.name}: more pencil lines at 1`);
+    assert.ok(Math.max(...widths(rough)) > Math.max(...widths(base)), `${icon.name}: wider lines at 1`);
+    assert.notEqual(lib.toSvg(icon, { pencil: true, rough: 0.5 }), base);
+    // rough is clamped to 0..1
+    assert.equal(lib.toSvg(icon, { pencil: true, rough: 3 }), rough);
+    assert.equal(lib.toSvg(icon, { pencil: true, rough: -1 }), base);
+    // rough only changes pencil icons
+    assert.equal(lib.toSvg(icon, { rough: 1 }), lib.toSvg(icon));
+  }
+
+  // the nearest pencil.css texture level is set as data-sketch-rough
+  const level = rough => lib.toSvg(lib.Star, { pencil: true, rough }).match(/data-sketch-rough="(\d)"/)?.[1];
+  assert.deepEqual([0, 0.2, 0.5, 0.7, 0.8, 1].map(level), [undefined, undefined, '1', '1', '2', '2']);
+  assert.doesNotMatch(lib.toSvg(lib.Star, { rough: 1 }), /data-sketch-rough/);
+
+  // React: prop and provider, same drawing as toSvg
+  const jsx = renderToStaticMarkup(h(R.Star, { pencil: true, rough: 1 }));
+  assert.match(jsx, /data-sketch-rough="2"/);
+  assert.deepEqual(widths(jsx), widths(lib.toSvg(lib.Star, { pencil: true, rough: 1 })));
+  assert.match(renderToStaticMarkup(h(R.SketchIconProvider, { pencil: true, rough: 0.5 }, h(R.SketchIcon, { name: 'star' }))), /data-sketch-rough="1"/);
+  assert.equal(renderToStaticMarkup(h(R.Star, { pencil: true, rough: 0 })), renderToStaticMarkup(h(R.Star, { pencil: true })));
+
+  // replaceIcons reads data-rough
+  const doc = { createElementNS: (_, tag) => ({ tag, attrs: {}, children: [], setAttribute(k, v) { this.attrs[k] = v; }, appendChild(c) { this.children.push(c); } }) };
+  let swapped;
+  const el = { dataset: { pencil: '', rough: '1' }, getAttribute: k => (k === 'data-sketch-icon' ? 'star' : null), replaceWith: s => { swapped = s; } };
+  lib.replaceIcons({ icons: lib.icons, root: { ownerDocument: doc, querySelectorAll: () => [el] } });
+  assert.equal(swapped.attrs['data-sketch-rough'], '2');
+
+  // both texture levels keep the --matita-grain dial
+  const css = await readFile(new URL('../dist/pencil.css', import.meta.url), 'utf8');
+  for (const n of [1, 2]) {
+    assert.match(css, new RegExp(`\\[data-sketch-rough="${n}"\\]\\{\\s*-webkit-mask-image:url\\("data:image/svg\\+xml,[^"]+"\\),linear-gradient\\(rgb\\(0 0 0 / calc\\(1 - var\\(--matita-grain, 1\\)\\)\\)`));
+  }
+});
+
 test('custom glyphs draw in the same hand', () => {
   const T = R.createSketchIcon(drawIcon('t-square', { defs: { 't-square': 'L 4 5 20 5;L 12 5 12 20' } }));
   assert.match(renderToStaticMarkup(h(T)), /sketch-icon-t-square/);
