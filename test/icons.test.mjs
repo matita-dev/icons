@@ -133,6 +133,9 @@ test('rough: 0 is the pencil as before, up to 1 is wider and looser, determinist
     assert.ok(count(rough) > count(base), `${icon.name}: more pencil lines at 1`);
     assert.ok(Math.max(...widths(rough)) > Math.max(...widths(base)), `${icon.name}: wider lines at 1`);
     assert.notEqual(lib.toSvg(icon, { pencil: true, rough: 0.5 }), base);
+    // rough works in steps of 0.05, so values in between reuse a drawing
+    assert.equal(lib.toSvg(icon, { pencil: true, rough: 0.51 }), lib.toSvg(icon, { pencil: true, rough: 0.5 }));
+    assert.equal(lib.toSvg(icon, { pencil: true, rough: 0.01 }), base);
     // rough is clamped to 0..1
     assert.equal(lib.toSvg(icon, { pencil: true, rough: 3 }), rough);
     assert.equal(lib.toSvg(icon, { pencil: true, rough: -1 }), base);

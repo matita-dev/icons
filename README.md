@@ -89,7 +89,7 @@ toSvg(Star, { pencil: true, rough: 1 });
 <i data-sketch-icon="star" data-pencil data-rough="0.5"></i>
 ```
 
-`rough` only applies to pencil icons. `pencil.css` has two coarser paper textures and picks the nearest one, and `--matita-grain` still dials the grain on top. At 16px the top of the range starts to fill in small closed shapes (the middle of a star, a small loop), so keep `rough` lower there. The `pencil/<name>.svg` files are unchanged.
+`rough` only applies to pencil icons and works in steps of 0.05. It isn't perfectly smooth: from 0.75 each stroke gets one more pencil line, so the drawing changes a little more at that point. `pencil.css` has two coarser paper textures and picks the nearest one, and `--matita-grain` still dials the grain on top. At 16px the top of the range starts to fill in small closed shapes (the middle of a star, a small loop), so keep `rough` lower there. The `pencil/<name>.svg` files are unchanged.
 
 ## Add an icon
 

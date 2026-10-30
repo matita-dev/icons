@@ -74,7 +74,8 @@ function hairline(segs, r, off, drift, tIn, tOut) {
     `rough` (0 to 1, default 0) makes the lines wider, looser and a little lighter, with one more line per stroke
     from 0.75 up. It only changes the pencil texture, not the shape: that's `wobble`. 0 draws exactly what it did before. */
 export function pencilLines(icon, rough = 0) {
-  rough = Math.min(1, Math.max(0, +rough || 0));
+  // Steps of 0.05, so a slider sweeping 0 to 1 caches at most 21 drawings per icon
+  rough = Math.round(Math.min(1, Math.max(0, +rough || 0)) * 20) / 20;
   let byRough = cache.get(icon);
   if (!byRough) cache.set(icon, byRough = new Map());
   if (byRough.has(rough)) return byRough.get(rough);
