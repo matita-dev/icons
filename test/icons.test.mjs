@@ -140,6 +140,13 @@ test('rough: 0 is the pencil as before, up to 1 is wider and looser, determinist
     assert.equal(lib.toSvg(icon, { rough: 1 }), lib.toSvg(icon));
   }
 
+  // rough also roughens exact shapes (wobble 0) without changing them
+  for (const n of lib.names) {
+    const exactRough = lib.toSvg(drawIcon(n, { wobble: 0 }), { pencil: true, rough: 1 });
+    assert.doesNotMatch(exactRough, /NaN|undefined|Infinity/, n);
+    assert.equal(exactRough, lib.toSvg(drawIcon(n, { wobble: 0 }), { pencil: true, rough: 1 }), n);
+  }
+
   // the nearest pencil.css texture level is set as data-sketch-rough
   const level = rough => lib.toSvg(lib.Star, { pencil: true, rough }).match(/data-sketch-rough="(\d)"/)?.[1];
   assert.deepEqual([0, 0.2, 0.5, 0.7, 0.8, 1].map(level), [undefined, undefined, '1', '1', '2', '2']);
