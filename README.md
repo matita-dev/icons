@@ -12,6 +12,8 @@ Browse, search and copy them at [matita.dev](https://matita.dev).
 - Pencil variant: every stroke drawn as two or three loose pencil lines, with paper grain
 - Wobble: turn the hand down to 0 and every icon is drawn as exact shapes, true lines, circles and corners
 
+![matita — pencil-style icons drawn by code, from a sketchy hand to exact shapes](./matita-demo.gif)
+
 ## Install
 
 ```sh
