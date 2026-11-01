@@ -17,7 +17,7 @@ const draw = (name, seed = 0, wobble = 1) => {
   return cache.get(k);
 };
 
-const state = { q: '', size: 24, strokeWidth: 1.6, color: 'currentColor', pencil: false, seed: 0, wobble: 1, selected: 'ruler', fmt: 'react' };
+const state = { q: '', size: 24, strokeWidth: 1.6, color: 'currentColor', pencil: false, seed: 0, wobble: 1, grain: 1, selected: 'ruler', fmt: 'react' };
 const opts = (size = state.size) => ({ size, strokeWidth: state.strokeWidth, color: state.color, pencil: state.pencil });
 const announce = msg => { const el = $('#announce'); el.textContent = ''; setTimeout(() => { el.textContent = msg; }, 30); };
 
@@ -119,9 +119,19 @@ function setVariant(pencil) {
   for (const b of $$('[data-variant]')) {
     if (b.tagName === 'BUTTON') b.setAttribute('aria-pressed', String((b.dataset.variant === 'pencil') === pencil));
   }
+  if (grain) grain.disabled = !pencil;
   renderGrid(); renderDetail();
 }
 for (const b of $$('button[data-variant]')) b.addEventListener('click', () => setVariant(b.dataset.variant === 'pencil'));
+
+/* grain: the paper texture of the pencil variant, set with the --matita-grain CSS variable on the browser. Only on pages
+   built with a package that has it; it does nothing for the ink variant, so the slider waits for Pencil. */
+const grain = $('#grain');
+if (grain) grain.addEventListener('input', () => {
+  state.grain = Math.round(+grain.value * 100) / 100;
+  $('#grain-out').textContent = Math.round(state.grain * 100) + '%';
+  $('.browser').style.setProperty('--matita-grain', String(state.grain));
+});
 
 const seedOut = $('#seed-out'), reset = $('#seed-reset');
 function setSeed(s) {
@@ -168,7 +178,7 @@ function snippets(name) {
   if (s.color !== 'currentColor') jsOpts.push(`color: '${s.color}'`);
   if (s.strokeWidth !== 1.6) jsOpts.push(`strokeWidth: ${s.strokeWidth}`);
   if (s.pencil) jsOpts.push('pencil: true');
-  const css = s.pencil ? `import '@matita/icons/pencil.css';\n` : '';
+  const css = s.pencil ? `import '@matita/icons/pencil.css';\n${s.grain !== 1 ? `/* in your CSS: --matita-grain: ${s.grain}; */\n` : ''}` : '';
   const custom = s.seed || s.wobble !== 1;
   const extra = [s.seed ? 'seed={' + s.seed + '}' : '', s.wobble !== 1 ? 'wobble={' + s.wobble + '}' : ''].filter(Boolean).join(' ');
   const jsExtra = [s.seed ? 'seed: ' + s.seed : '', s.wobble !== 1 ? 'wobble: ' + s.wobble : ''].filter(Boolean).join(', ');
