@@ -2,7 +2,7 @@
 
 Changes to `@matita/icons`. While the package is on 0.x, a minor version adds glyphs and a patch fixes things.
 
-## 0.5.0 — unreleased
+## 0.5.0 — 2026-11-01
 
 42 new glyphs (260 → 302), a new `B` primitive for curved lines, and ten glyphs redrawn.
 
