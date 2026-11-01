@@ -2,6 +2,10 @@
 
 Changes to `@matita/icons`. While the package is on 0.x, a minor version adds glyphs and a patch fixes things.
 
+## 0.5.1 — 2026-11-01
+
+README only: the cover image shows all 302 glyphs on the npm page.
+
 ## 0.5.0 — 2026-11-01
 
 42 new glyphs (260 → 302), a new `B` primitive for curved lines, and ten glyphs redrawn.
