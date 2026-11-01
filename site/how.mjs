@@ -16,7 +16,7 @@ const FAQ = [
   ['What does "the same every time" mean?',
     'That the drawing is repeatable. The wobble is not rolled fresh on every render: it comes from the icon\'s name, so the server and the browser, or two different builds, draw exactly the same strokes. If you want another take, ask for a different seed.'],
   ['How big are the icons?',
-    'About 0.8 KB each as a raw SVG (about 0.45 KB gzipped), and around 2.3 KB for the pencil version (under 1 KB gzipped). In a bundle, one React icon adds about 2 KB gzipped with the renderer included, ten add about 4 KB, and every icon by name about 54 KB. The ink is drawn once at build time and ships as finished path data; the pencil lines are worked out from it when an icon is shown.'],
+    'About 0.9 KB each as a raw SVG (about 0.5 KB gzipped), and around 2.4 KB for the pencil version (about 1 KB gzipped). In a bundle, one React icon adds about 2.5 KB gzipped with the renderer included, ten add about 4 KB, and every icon by name about 67 KB. The ink is drawn once at build time and ships as finished path data; the pencil lines are worked out from it when an icon is shown.'],
   ['Does it still read at 16 px?',
     'Yes. Every habit of the pencil has a cap. At 24 px a line bows by less than a pixel and an endpoint moves by about a fifth of one, and no stroke is thinner than about 1.4. The pencil character shows from about 32 px up.'],
   ['Can I turn any SVG into this style?',
