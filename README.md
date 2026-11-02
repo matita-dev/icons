@@ -2,11 +2,11 @@
 
 Pencil-style icons for the web, drawn by code. Lines overshoot their ends like ruled pencil strokes, boxes cross at the corners, circles overlap where the pen closes, or stop just short. Every glyph is deterministic: the same name always draws the same way.
 
-[![All Matita icons on graph paper](https://matita.dev/set.png?v=0.4.0)](https://matita.dev)
+[![All Matita icons on graph paper](https://matita.dev/set.png?v=0.5.1)](https://matita.dev)
 
 Browse, search and copy them at [matita.dev](https://matita.dev).
 
-- 260 glyphs · 24 grid · 1.6 stroke · `currentColor`
+- 302 glyphs · 24 grid · 1.6 stroke · `currentColor`
 - Plain, descriptive kebab-case names (`arrow-right`, `trash-2`, `circle-check`)
 - Stroke-based, so color and stroke width stay yours to change
 - Pencil variant: every stroke drawn as two or three loose pencil lines, with paper grain

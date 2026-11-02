@@ -17,10 +17,12 @@ export const VISION = [
 /* status: 'progress' (being built now), 'next' (planned, in order), 'later' (considering; tell us if you want it).
    when: a target, shown as is. Targets are not promises: they move if something takes longer. */
 export const ROADMAP = [
-  { status: 'progress', release: '0.4.0', when: 'Target: late October 2026', title: '60 new icons',
+  { status: 'progress', release: '0.4.0', title: '60 new icons',
     text: 'The biggest batch yet, led by what people asked for: a medical and science set (stethoscope, syringe, microscope, DNA, X-ray and more), plus everyday gaps such as timers, checked files and users, tools, devices and travel.' },
-  { status: 'progress', release: '0.4.0', when: 'Target: late October 2026', title: 'Perfect mode: wobble from 0 to 1',
+  { status: 'progress', release: '0.4.0', title: 'Perfect mode: wobble from 0 to 1',
     text: 'A wobble setting so any icon can be drawn as exact shapes (true lines, circles and square corners) or anywhere in between. Comes with ready-made exact SVG files and a Perfect button in the icon browser.' },
+  { status: 'progress', release: '0.5.0', title: '42 new icons and a curve primitive',
+    text: 'Faces, math signs, more science and medical glyphs, weather and nature, money, plus a B primitive for curved lines, a paper-grain dial and accessible labels.' },
   { status: 'next', when: 'Target: November 2026', title: 'Search by meaning',
     text: 'Type "delete" and find the bin, or "money" and find the wallet. Every icon gets keywords and a category, used by the search box, the icon pages and the all-icons page.' },
   { status: 'next', when: 'Target: December 2026, depending on requests', title: 'More science glyphs',

@@ -338,8 +338,9 @@ kbd { font: 500 11px/1 var(--font-mono); padding: 3px 6px; border: 1px solid var
 .ctl { display: flex; align-items: center; gap: 8px; }
 .ctl label, .ctl-l { font: 500 11px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
 .ctl output { font: 500 12.5px/1 var(--font-mono); color: var(--ink-1); min-width: 2.4ch; }
-.ctl-wobble output { min-width: 4ch; }
+.ctl-wobble output, .ctl-grain output { min-width: 4ch; }
 input[type="range"] { width: 96px; accent-color: var(--ink-1); }
+input[type="range"]:disabled { opacity: .4; }
 .swatch {
   position: relative;
   width: 24px;

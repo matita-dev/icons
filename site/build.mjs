@@ -86,6 +86,8 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
   const n = names.length;
   /* does this package have the wobble setting (0.4.0+)? Pages only offer it when it does, so a site built on an older
      pin never shows a control that does nothing. */
+  /* does this package's pencil.css have the --matita-grain dial (0.5.0+)? Same rule: no control that does nothing. */
+  const HAS_GRAIN = (await readFile(join(pkgDir, 'dist/pencil.css'), 'utf8')).includes('--matita-grain');
   const HAS_WOBBLE = drawIcon('minus', { wobble: 0 }).ink[0][0] !== drawIcon('minus').ink[0][0];
   /* which release added each icon, from CHANGELOG.md; icons from the newest batch get a "New" badge */
   const history = readHistory({ file: join(repo, 'CHANGELOG.md'), names, version: pkg.version });
@@ -178,7 +180,7 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
       { '@type': 'WebSite', '@id': SITE + '#website', url: SITE, name: 'Matita', inLanguage: 'en' },
       {
         '@type': 'SoftwareSourceCode', '@id': SITE + '#icons', url: SITE, name: 'Matita icons',
-        description: '260+ pencil-style icons as SVG and React components, drawn by code from simple shapes. MIT licensed.',
+        description: '300+ pencil-style icons as SVG and React components, drawn by code from simple shapes. MIT licensed.',
         codeRepository: 'https://github.com/matita-dev/icons', programmingLanguage: 'JavaScript',
         license: 'https://opensource.org/licenses/MIT', version: pkg.version, isPartOf: { '@id': SITE + '#website' },
         publisher: {
@@ -244,17 +246,17 @@ const eyebrow = (num, text) => `<p class="eyebrow"><span class="eyebrow-num">${n
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Matita · pencil-style icons for React and the web</title>
-<meta name="description" content="260+ pencil-style icons as SVG and React components, drawn by code. Strokes overshoot, corners cross, circles overlap where the pen closes. Free and MIT licensed.">
+<meta name="description" content="300+ pencil-style icons as SVG and React components, drawn by code. Strokes overshoot, corners cross, circles overlap where the pen closes. Free and MIT licensed.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:title" content="Matita · pencil-style icons">
-<meta property="og:description" content="260+ pencil-style icons for the web, drawn by code. MIT licensed.">
+<meta property="og:description" content="300+ pencil-style icons for the web, drawn by code. MIT licensed.">
 <meta property="og:url" content="https://matita.dev/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Matita">
 <meta property="og:image" content="https://matita.dev/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Matita: ruled by the grid, sketched by code. 260+ pencil-style icons for the web.">
+<meta property="og:image:alt" content="Matita: ruled by the grid, sketched by code. 300+ pencil-style icons for the web.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://matita.dev/">
 <script type="application/ld+json">${jsonLd}</script>
@@ -279,7 +281,7 @@ ${siteHeader('')}
     <div class="hero-copy">
       ${eyebrow('00', 'Pencil-style icons for the web')}
       <h1 id="hero-title">Ruled by the grid.<br>Sketched by <em>code</em>.</h1>
-      <p class="lead">260+ pencil-style icons as SVG and React components. Each one is a few simple shapes that code draws like a pencil would: lines overshoot their ends, boxes cross at the corners and circles overlap where the pen closes. The same name always draws the same way, everywhere.</p>
+      <p class="lead">300+ pencil-style icons as SVG and React components. Each one is a few simple shapes that code draws like a pencil would: lines overshoot their ends, boxes cross at the corners and circles overlap where the pen closes. The same name always draws the same way, everywhere.</p>
       <div class="install-line">
         <code id="hero-install">npm i @matita/icons</code>
         <button class="btn btn-sm copy" type="button" data-copy-target="hero-install">Copy</button>
@@ -289,7 +291,7 @@ ${siteHeader('')}
         <a class="btn" href="https://github.com/matita-dev/icons">View source</a>
       </div>
       <ul class="facts" aria-label="Facts">
-        <li>260+ glyphs</li><li>24 grid</li><li>1.6 stroke</li><li>currentColor</li><li>MIT</li>
+        <li>300+ glyphs</li><li>24 grid</li><li>1.6 stroke</li><li>currentColor</li><li>MIT</li>
       </ul>
     </div>
     <div class="hero-fig">
@@ -351,6 +353,11 @@ ${siteHeader('')}
         <input id="wobble" type="range" min="0" max="1" step="0.05" value="1">
         <output for="wobble" id="wobble-out">100%</output>
         <button type="button" class="btn btn-sm" id="perfect" aria-pressed="false" title="Draw every icon as exact shapes (wobble 0)">Perfect</button>
+      </div>` : ''}${HAS_GRAIN ? `
+      <div class="ctl ctl-grain">
+        <label for="grain">Grain</label>
+        <input id="grain" type="range" min="0" max="1" step="0.05" value="1" disabled>
+        <output for="grain" id="grain-out">100%</output>
       </div>` : ''}
     </div>
 
@@ -441,7 +448,7 @@ document.body.append(createElement(Ruler, { size: 24, pencil: true }));`)}
 @matita/icons/pencil/<name>.svg    // pencil variant
 @matita/icons/sprite.svg           // <symbol id="<name>">
 @matita/icons/icons.json           // path data for every glyph
-@matita/icons/pencil.css           // paper grain for the pencil variant`)}
+@matita/icons/pencil.css           // paper grain for the pencil variant (dial: --matita-grain, 0 to 1)`)}
       </div>
     </div>
 
@@ -515,7 +522,7 @@ document.body.append(createElement(Ruler, { size: 24, pencil: true }));`)}
     ${eyebrow('04', 'Pencil variant')}
     <div class="section-head">
       <h2 id="pencil-title">Ink, or <em>graphite</em></h2>
-      <p class="muted">Pass <code>pencil</code> and every stroke is drawn as two or three loose pencil lines, like a quick sketch. Import <code>pencil.css</code> once for the paper grain.</p>
+      <p class="muted">Pass <code>pencil</code> and every stroke is drawn as two or three loose pencil lines, like a quick sketch. Import <code>pencil.css</code> once for the paper grain, and set <code>--matita-grain</code> from 0 (solid lines) to 1 (full grain) to dial it.</p>
     </div>
     <div class="variants">
       <figure class="frame variant">

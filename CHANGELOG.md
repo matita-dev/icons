@@ -2,6 +2,26 @@
 
 Changes to `@matita/icons`. While the package is on 0.x, a minor version adds glyphs and a patch fixes things.
 
+## 0.5.1 — 2026-11-01
+
+README only: the cover image shows all 302 glyphs on the npm page.
+
+## 0.5.0 — 2026-11-01
+
+42 new glyphs (260 → 302), a new `B` primitive for curved lines, and ten glyphs redrawn.
+
+- **Faces:** meh, frown, laugh, angry, surprised
+- **Math:** infinity, square-root, plus-minus
+- **Science:** beaker, magnet, telescope, orbit, planet, molecule, virus, bacteria
+- **Medical and biology:** cell, petri-dish, first-aid-kit, prescription, prescription-2
+- **Weather, nature and travel:** cloud-sun, cloud-rain, cloud-lightning, snowflake, wind, mountain, flower, waves, fish, sailboat, bed
+- **People and work:** id-card, user-x, circle-minus, calendar-plus, bell-ring, megaphone, life-buoy
+- **Money and value:** crown, gem, scale
+- **New: `B` primitive.** One curved line made of cubic Bezier segments (a start point, then per segment two curve handles and the end point), for custom glyphs and built-in ones. It draws as exact shapes at wobble 0 and in the same hand as the other primitives otherwise. Every other glyph draws exactly as in 0.4.0.
+- **Fixed: accessible labels.** An icon with `aria-label`, `aria-labelledby` or its own `role` is no longer `aria-hidden`, and a label also sets `role="img"`; icons with none of these stay hidden from screen readers as before. The React component now renders a `<title>` child when `title` is set, like `toSvg` and `createElement`, so a tooltip shows on hover. Thanks to @tad-bit-better.
+- **New: `--matita-grain`.** A CSS variable for the pencil variant's paper grain, from 0 (solid lines) to 1 (the grain as in 0.4.0, and the default when the variable is unset). Set it on an icon or any parent. Thanks to @tad-bit-better.
+- Ten glyphs are redrawn (pill now has dots in one half, and key, keyboard, hard-drive, car, lightbulb, at-sign, hammer, brush and bone have new drawings).
+
 ## 0.4.0 — 2026-10-23
 
 60 new glyphs (200 → 260) and a wobble setting that goes all the way down to exact shapes.
