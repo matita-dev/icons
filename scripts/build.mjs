@@ -77,12 +77,13 @@ export interface SketchIconOptions {
   /** CSS colour, default currentColor */ color?: string;
   /** stroke width on the 24 grid, default 1.6 */ strokeWidth?: number;
   /** pencil variant: every stroke drawn as two or three loose pencil lines (pair with pencil.css for the paper grain) */ pencil?: boolean;
+  /** pencil texture, 0 (default) to 1: wider, looser lines and a coarser paper (with pencil.css). Shape is \`wobble\`'s job */ rough?: number;
   /** accessible label; omit for decorative icons */ title?: string;
   class?: string;
   attrs?: Record<string, string | number>;
 }
 export declare const DEFAULTS: Required<Pick<SketchIconOptions, 'size' | 'color' | 'strokeWidth' | 'pencil'>>;
-export declare function iconPaths(icon: SketchIconData, opts?: Pick<SketchIconOptions, 'strokeWidth' | 'pencil'>): { d: string; 'stroke-width': number; 'stroke-opacity'?: number }[];
+export declare function iconPaths(icon: SketchIconData, opts?: Pick<SketchIconOptions, 'strokeWidth' | 'pencil' | 'rough'>): { d: string; 'stroke-width': number; 'stroke-opacity'?: number }[];
 export declare function iconAttrs(icon: SketchIconData, opts?: SketchIconOptions): Record<string, string | number>;
 export declare function toSvg(icon: SketchIconData, opts?: SketchIconOptions): string;
 export declare function toSvgInner(icon: SketchIconData, opts?: SketchIconOptions): string;
@@ -116,11 +117,12 @@ export interface SketchIconProps extends Omit<React.SVGProps<SVGSVGElement>, 're
   /** stroke width on the 24 grid, default 1.6 (≈1px at 16px) */ strokeWidth?: number;
   /** alias of strokeWidth */ weight?: number;
   /** pencil variant: every stroke drawn as two or three loose pencil lines (pair with pencil.css for the paper grain) */ pencil?: boolean;
+  /** pencil texture, 0 (default) to 1: wider, looser lines and a coarser paper (with pencil.css). Shape is \`wobble\`'s job */ rough?: number;
   /** accessible label; omit for decorative icons */ title?: string;
 }
 export type SketchIconComponent = React.ForwardRefExoticComponent<SketchIconProps & React.RefAttributes<SVGSVGElement>>;
-export declare const SketchIconContext: React.Context<Pick<SketchIconProps, 'size' | 'color' | 'strokeWidth' | 'pencil'>>;
-export declare function SketchIconProvider(props: Pick<SketchIconProps, 'size' | 'color' | 'strokeWidth' | 'pencil'> & { children?: React.ReactNode }): React.JSX.Element;
+export declare const SketchIconContext: React.Context<Pick<SketchIconProps, 'size' | 'color' | 'strokeWidth' | 'pencil' | 'rough'>>;
+export declare function SketchIconProvider(props: Pick<SketchIconProps, 'size' | 'color' | 'strokeWidth' | 'pencil' | 'rough'> & { children?: React.ReactNode }): React.JSX.Element;
 export declare function createSketchIcon(icon: SketchIconData): SketchIconComponent;
 export declare const SketchIcon: React.ForwardRefExoticComponent<SketchIconProps & { name: SketchIconName; seed?: number; /** 0 = exact shapes, 1 = the full hand (default) */ wobble?: number } & React.RefAttributes<SVGSVGElement>> & {
   names: SketchIconName[];

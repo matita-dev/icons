@@ -6,10 +6,13 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 
 export const DEFAULTS = { size: 16, color: 'currentColor', strokeWidth: 1.6, pencil: false };
 
+/** pencil.css texture level for a `rough` amount: 0 (today's grain), 1 or 2, whichever is nearest. */
+export const roughLevel = rough => Math.round(Math.min(1, Math.max(0, +rough || 0)) * 2);
+
 /** Path list for one icon: ink strokes (or, for pencil, two or three loose pencil lines per stroke), then dots. */
-export function iconPaths(icon, { strokeWidth = DEFAULTS.strokeWidth, pencil = false } = {}) {
+export function iconPaths(icon, { strokeWidth = DEFAULTS.strokeWidth, pencil = false, rough = 0 } = {}) {
   const out = pencil
-    ? pencilLines(icon).map(([d, w, o]) => ({ d, 'stroke-width': r(strokeWidth * w), 'stroke-opacity': o }))
+    ? pencilLines(icon, rough).map(([d, w, o]) => ({ d, 'stroke-width': r(strokeWidth * w), 'stroke-opacity': o }))
     : icon.ink.map(([d, w]) => ({ d, 'stroke-width': r(strokeWidth * w) }));
   if (icon.dot) out.push({ d: icon.dot, 'stroke-width': r(strokeWidth * (pencil ? 1.35 : 1.55)) });
   return out;
@@ -26,7 +29,7 @@ export const a11yAttrs = (attrs = {}) => {
 
 /** Root <svg> attributes. */
 export function iconAttrs(icon, opts = {}) {
-  const { size = DEFAULTS.size, color = DEFAULTS.color, strokeWidth = DEFAULTS.strokeWidth, pencil = false, title, class: cls } = opts;
+  const { size = DEFAULTS.size, color = DEFAULTS.color, strokeWidth = DEFAULTS.strokeWidth, pencil = false, rough = 0, title, class: cls } = opts;
   const own = a11yAttrs(opts.attrs);
   const a = {
     xmlns: 'http://www.w3.org/2000/svg', viewBox: '0 0 24 24', width: size, height: size, fill: 'none', stroke: color,
@@ -34,6 +37,7 @@ export function iconAttrs(icon, opts = {}) {
     class: ['sketch-icon', 'sketch-icon-' + icon.name, cls].filter(Boolean).join(' '), 'data-sketch': ''
   };
   if (pencil) a['data-sketch-pencil'] = '';
+  if (pencil && roughLevel(rough)) a['data-sketch-rough'] = roughLevel(rough);
   if (title) { a.role = 'img'; a['aria-label'] = title; }
   else if (own.labelled) a.role = 'img';
   else if (!own.any) a['aria-hidden'] = 'true';
@@ -48,7 +52,7 @@ export function toSvgInner(icon, opts = {}) {
   return iconPaths(icon, opts).map(p => `<path ${attrString(p)}/>`).join('');
 }
 
-/** Full <svg> string. opts: size, color, strokeWidth, pencil, title, class, attrs */
+/** Full <svg> string. opts: size, color, strokeWidth, pencil, rough, title, class, attrs */
 export function toSvg(icon, opts = {}) {
   const a = { ...iconAttrs(icon, opts), ...(opts.attrs || {}) };
   const t = opts.title ? `<title>${esc(opts.title)}</title>` : '';
@@ -71,7 +75,7 @@ export function createElement(icon, opts = {}, doc = globalThis.document) {
 }
 
 /** Swap every <i data-sketch-icon="name"> (or any element) for its SVG.
-    Per-element overrides: data-size, data-stroke-width, data-color, data-pencil, data-title, class. */
+    Per-element overrides: data-size, data-stroke-width, data-color, data-pencil, data-rough, data-title, class. */
 export function replaceIcons({ icons, attr = 'data-sketch-icon', root = globalThis.document, ...opts } = {}) {
   if (!icons) throw new Error('replaceIcons: pass { icons }');
   const doc = root.ownerDocument || root;
@@ -83,6 +87,7 @@ export function replaceIcons({ icons, attr = 'data-sketch-icon', root = globalTh
     if (d.strokeWidth) o.strokeWidth = +d.strokeWidth;
     if (d.color) o.color = d.color;
     if ('pencil' in d) o.pencil = d.pencil !== 'false';
+    if (d.rough) o.rough = +d.rough;
     if (d.title) o.title = d.title;
     if (el.getAttribute('class')) o.class = [opts.class, el.getAttribute('class')].filter(Boolean).join(' ');
     el.replaceWith(createElement(icon, o, doc));

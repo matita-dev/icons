@@ -1,7 +1,7 @@
 import { createElement as h, createContext, forwardRef, useContext } from 'react';
-import { a11yAttrs, iconPaths, pascal } from '../esm/render.js';
+import { a11yAttrs, iconPaths, pascal, roughLevel } from '../esm/render.js';
 
-/** Defaults for every sketch icon below it: size, color, strokeWidth, pencil. */
+/** Defaults for every sketch icon below it: size, color, strokeWidth, pencil, rough. */
 export const SketchIconContext = /*#__PURE__*/createContext({});
 
 export function SketchIconProvider({ children, ...value }) {
@@ -12,7 +12,7 @@ export function SketchIconProvider({ children, ...value }) {
 export function renderSketchIcon(icon, props, ref, ctx = {}) {
   const {
     size = ctx.size ?? 16, color = ctx.color ?? 'currentColor', strokeWidth, weight,
-    pencil = ctx.pencil ?? false, title, className, style, children, ...rest
+    pencil = ctx.pencil ?? false, rough = ctx.rough ?? 0, title, className, style, children, ...rest
   } = props;
   const sw = strokeWidth ?? weight ?? ctx.strokeWidth ?? 1.6;
   const own = a11yAttrs(rest);
@@ -20,6 +20,7 @@ export function renderSketchIcon(icon, props, ref, ctx = {}) {
     ref, xmlns: 'http://www.w3.org/2000/svg', viewBox: '0 0 24 24', width: size, height: size,
     fill: 'none', stroke: color, strokeWidth: sw, strokeLinecap: 'round', strokeLinejoin: 'round',
     'data-sketch': '', 'data-sketch-pencil': pencil ? '' : undefined,
+    'data-sketch-rough': pencil && roughLevel(rough) ? roughLevel(rough) : undefined,
     className: ['sketch-icon', 'sketch-icon-' + icon.name, className].filter(Boolean).join(' '),
     role: title || own.labelled ? 'img' : undefined, 'aria-label': title,
     'aria-hidden': title || own.any ? undefined : 'true',
@@ -27,7 +28,7 @@ export function renderSketchIcon(icon, props, ref, ctx = {}) {
     style: { display: 'inline-block', flex: 'none', overflow: 'visible', ...style }
   },
   title ? h('title', null, title) : null,
-  iconPaths(icon, { strokeWidth: sw, pencil }).map((p, i) =>
+  iconPaths(icon, { strokeWidth: sw, pencil, rough }).map((p, i) =>
     h('path', { key: i, d: p.d, strokeWidth: p['stroke-width'], strokeOpacity: p['stroke-opacity'] })),
   children);
 }
