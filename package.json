@@ -1,6 +1,6 @@
 {
   "name": "@matita/icons",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Pencil-style icons for the web, drawn by code: ruled strokes that overshoot, crossed corners, circles that overlap where the pen closes.",
   "license": "MIT",
   "homepage": "https://matita.dev",
@@ -60,7 +60,8 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist"
+    "dist",
+    "CHANGELOG.md"
   ],
   "keywords": [
     "icons",
