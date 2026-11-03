@@ -29,16 +29,14 @@ Guidelines:
 - Use a short, descriptive kebab-case name that says what the icon shows (`arrow-right`, not `next`).
 - Keep to 2–5 primitives and stay inside the 1–23 grid. No fills.
 - Don't try to remove the wobble. Overshooting lines, crossed corners and overlapping circles are the style.
-- Check it next to its neighbours in `preview/index.html` at 16px and 24px.
+- Check it next to its neighbours at 16px and 24px (open the generated `dist/svg/<name>.svg` files).
 
 Then run:
 
 ```sh
 npm ci
-npm ci --prefix site   # once: the site's own dependencies
 npm run build          # lints the sources and builds dist/
 npm test
-npm run preview        # builds preview/index.html from your local dist/
 ```
 
 `npm run build` fails if a glyph uses an unknown primitive, has the wrong number of arguments,
@@ -47,8 +45,8 @@ leaves the grid, or draws nothing.
 ## Pull requests
 
 - One icon or one fix per PR where possible.
-- Include a screenshot of the new glyph from `preview/index.html`.
-- Don't commit `dist/` or `preview/`; they're generated.
+- Include a screenshot of the new glyph from `dist/svg/`.
+- Don't commit `dist/`; it's generated.
 - CI must pass (`test` job).
 
 ## Releases
