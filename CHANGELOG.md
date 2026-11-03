@@ -2,6 +2,10 @@
 
 Changes to `@matita/icons`. While the package is on 0.x, a minor version adds glyphs and a patch fixes things.
 
+## 0.5.2 — 2026-11-03
+
+The package now includes `CHANGELOG.md`, so the website can read the release history from the published version.
+
 ## 0.5.1 — 2026-11-01
 
 README only: the cover image shows all 302 glyphs on the npm page.
