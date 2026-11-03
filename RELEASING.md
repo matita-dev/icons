@@ -3,7 +3,7 @@
 How a version of `@matita/icons` goes out. A release is three small PRs and one tag, in this order:
 
 1. `release-x.y.z`: the version bump and CHANGELOG date (the package).
-2. `site-x.y.z`: pin the site to the published package.
+2. `site-x.y.z`: pin the site to the published package. This PR is in the separate private `site` repository.
 3. `readme-set-image`: bump the README image URL (only after the site is deployed).
 
 Only maintainers with write access do the steps marked **manual**. `main` requires a PR and the `test` check.
@@ -20,8 +20,8 @@ Run in `icons/` on a branch from an up-to-date `main`:
       skips undated entries. Keep the format (`- **Label:** a, b, c` for new glyphs, names spelled exactly).
 - [ ] The count in the CHANGELOG summary ("200 → 260") and in `README.md` matches the real number of glyphs.
 - [ ] New glyphs: inside the 1–23 grid, checked at 96 px and 24 px, listed in the CHANGELOG.
-- [ ] `npm --prefix site run build:local` and `npm --prefix site run build` both succeed, then `node seo-check.mjs`
-      in `site/` reports 0 failures.
+- [ ] In the `site` repository: `npm run build:local` (uses `../icons`, run `npm run build` here first) succeeds and
+      `node seo-check.mjs` reports 0 failures.
 - [ ] No other icon set or library is named anywhere (code, docs, comments, package.json, commit messages).
 
 ## Steps
@@ -32,13 +32,13 @@ Run in `icons/` on a branch from an up-to-date `main`:
 | 2 | Bump the version without a commit or tag | manual | `npm version minor --no-git-tag-version` (`patch` for fixes; minor when glyphs are added). Never plain `npm version`: it commits and tags. |
 | 3 | Set the CHANGELOG date, run the checklist above | manual | edit `CHANGELOG.md`, `npm run build`, `npm test` |
 | 4 | Commit `package.json`, `package-lock.json`, `CHANGELOG.md`, push, open PR | manual | `git push -u origin release-x.y.z` |
-| 5 | CI: `test` (build + tests) and `site` (site build) | automated | wait for green, then merge the PR |
+| 5 | CI: `test` (build + tests) | automated | wait for green, then merge the PR |
 | 6 | Pull the merge | manual | `git checkout main`, `git pull`, then `git log --oneline -1` must show the PR's merge commit |
 | 7 | Tag **only now** | manual | `git tag vx.y.z`, `git push origin vx.y.z` |
 | 8 | Release workflow: checks the tag equals `package.json`, builds, tests, `npm publish --provenance` (trusted publishing, no token) | automated | watch Actions, Release |
 | 9 | Confirm it is live | manual | `npm view @matita/icons@x.y.z version --prefer-online`. The registry can lag a few minutes, poll instead of trusting the first answer. |
-| 10 | Site PR `site-x.y.z`: pin the exact version | manual | in `site/`: `npm install --save-exact @matita/icons@x.y.z`; commit `site/package.json` and `site/package-lock.json` (patch releases too: the footer shows the version) |
-| 11 | In the same PR: raise the "NNN+" count literals (`site/build.mjs`, `site/layout.mjs`, `site/share.mjs`), re-measure the bundle sizes in `site/how.mjs`, update `site/roadmap.mjs` targets | manual | then `npm run build` and `node seo-check.mjs` in `site/` |
+| 10 | Site PR `site-x.y.z` in the `site` repository: pin the exact version | manual | `npm install --save-exact @matita/icons@x.y.z`; commit `package.json` and `package-lock.json` (patch releases too: the footer shows the version) |
+| 11 | In the same PR: raise the "NNN+" count literals (`build.mjs`, `layout.mjs`, `share.mjs`), re-measure the bundle sizes in `how.mjs`, update `roadmap.mjs` targets | manual | then `npm run build` and `node seo-check.mjs` |
 | 12 | Merge the site PR; Cloudflare builds and deploys `matita.dev` | manual, then automated | check `https://matita.dev/` shows the new version and count |
 | 13 | **README image PR** `readme-set-image`: change `set.png?v=<old>` to `?v=x.y.z` in `README.md` | manual | one line; merge it |
 | 14 | Outside the repo: launch assets, Figma file, Iconify, announcement posts | manual | `node launch/icons/assets.mjs` (maintainers' working folder) |

@@ -76,7 +76,6 @@
     "lint:icons": "node scripts/lint.mjs",
     "build": "node scripts/lint.mjs && node scripts/build.mjs",
     "test": "node --test",
-    "preview": "npm run build && npm --prefix site run build:local",
     "prepublishOnly": "npm run build && npm test"
   },
   "peerDependencies": {
