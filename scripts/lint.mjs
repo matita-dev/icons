@@ -3,7 +3,7 @@
 import { DEFS } from '../src/defs.js';
 import { drawIcon } from '../src/sketchify.js';
 
-const ARITY = { L: [4], P: 'pairs', Z: 'pairs', R: [4], C: [3], E: [4], A: [5], Q: [6], O: [2], B: 'bez' };
+const ARITY = { L: [4], P: 'pairs', Z: 'pairs', R: [4], C: [3], E: [4], A: [5], Q: [6], O: [2], B: 'bez', S: 'pairs' };
 const errors = [];
 
 for (const [name, src] of Object.entries(DEFS)) {

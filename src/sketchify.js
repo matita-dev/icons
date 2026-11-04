@@ -8,10 +8,10 @@ const f = n => Math.round(n * 100) / 100, pt = p => f(p[0]) + ' ' + f(p[1]);
 
 export { hash, prng };
 
-function smooth(P) {
+function smooth(P, pre) {
   let d = 'M' + pt(P[0]);
   for (let i = 0; i < P.length - 1; i++) {
-    const a = P[i - 1] || P[i], b = P[i], c = P[i + 1], e = P[i + 2] || c;
+    const a = (i === 0 && pre) || P[i - 1] || P[i], b = P[i], c = P[i + 1], e = P[i + 2] || c;
     d += 'C' + pt([b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6]) + ' ' + pt([c[0] - (e[0] - b[0]) / 6, c[1] - (e[1] - b[1]) / 6]) + ' ' + pt(c);
   }
   return d;
@@ -64,6 +64,16 @@ export function sketchify(src, r, wobble = 1) {
     for (let i = 1; i + 2 < n; i += 3) d += 'C' + pt(P[i]) + ' ' + pt(P[i + 1]) + ' ' + pt(P[i + 2]);
     return d;
   };
+  /* S: one smooth line through its points (a closed loop when the last point repeats the first). */
+  const sline = P => {
+    const closed = P.length > 3 && Math.hypot(P[0][0] - P[P.length - 1][0], P[0][1] - P[P.length - 1][1]) < .01; if (closed) P = P.slice(0, -1);
+    P = P.map(J);
+    if (closed) return smooth(P.concat([P[0], P[1]]), P[P.length - 1]);
+    const n = P.length, t = (a, b) => { const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; return [(b[0] - a[0]) / L, (b[1] - a[1]) / L]; };
+    const e0 = S(.15 + r() * .4), e1 = S(.15 + r() * .4), d0 = t(P[1], P[0]), d1 = t(P[n - 2], P[n - 1]);
+    P[0] = [P[0][0] + d0[0] * e0, P[0][1] + d0[1] * e0]; P[n - 1] = [P[n - 1][0] + d1[0] * e1, P[n - 1][1] + d1[1] * e1];
+    return smooth(P);
+  };
   let s = '', o = ''; const out = [];
   for (const part of src.split(';')) {
     const before = s; const k = part.trim()[0], v = part.trim().slice(1).trim().split(/\s+/).map(Number), pts = [];
@@ -72,6 +82,7 @@ export function sketchify(src, r, wobble = 1) {
     else if (k === 'R') { const [x, y, w, h] = v; const ov = 1.15; s += line(x, y, x + w, y, ov) + line(x + w, y, x + w, y + h, ov) + line(x + w, y + h, x, y + h, ov) + line(x, y + h, x, y, ov); }
     else if (k === 'C') s += ring(v[0], v[1], v[2], v[2]); else if (k === 'E') s += ring(v[0], v[1], v[2], v[3]); else if (k === 'A') s += arc(...v); else if (k === 'Q') s += quad(...v);
     else if (k === 'B') s += bez(pts);
+    else if (k === 'S') s += sline(pts);
     else if (k === 'O') { const p = J([v[0], v[1]]); o += 'M' + pt(p) + 'l.01 0'; }
     if (s !== before) out.push({ d: s.slice(before.length), w: f(K === 1 ? .86 + r() * .28 : 1 + (.86 + r() * .28 - 1) * K) });
   }
@@ -96,6 +107,16 @@ export function exact(src) {
     }
     else if (k === 'Q') d = 'M' + pts[0] + 'Q' + pts[1] + ' ' + pts[2];
     else if (k === 'B') { d = 'M' + pts[0]; for (let i = 1; i + 2 < pts.length; i += 3) d += 'C' + pts[i] + ' ' + pts[i + 1] + ' ' + pts[i + 2]; }
+    else if (k === 'S') {
+      let P = []; for (let i = 0; i + 1 < v.length; i += 2) P.push([v[i], v[i + 1]]);
+      const closed = P.length > 3 && Math.hypot(P[0][0] - P[P.length - 1][0], P[0][1] - P[P.length - 1][1]) < .01; if (closed) P = P.slice(0, -1);
+      const n = P.length, at = i => closed ? P[(i + n) % n] : P[Math.max(0, Math.min(n - 1, i))]; d = 'M' + pt(P[0]);
+      for (let i = 0; i < (closed ? n : n - 1); i++) {
+        const a = at(i - 1), b = at(i), c = at(i + 1), e = at(i + 2);
+        d += 'C' + pt([b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6]) + ' ' + pt([c[0] - (e[0] - b[0]) / 6, c[1] - (e[1] - b[1]) / 6]) + ' ' + pt(c);
+      }
+      if (closed) d += 'Z';
+    }
     else if (k === 'O') o += 'M' + pts[0] + 'l.01 0';
     if (d) out.push({ d, w: 1 });
   }
