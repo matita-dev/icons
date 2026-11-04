@@ -191,3 +191,15 @@ test('B draws one Bezier line: exact at wobble 0, a hand at 1, deterministic', (
   assert.deepEqual(hand, drawIcon('bow', { defs }));
   assert.notDeepEqual(hand.ink, drawIcon('bow', { defs, seed: 3 }).ink);
 });
+
+test('S draws one smooth line through its points: exact at wobble 0, a hand at 1, deterministic', () => {
+  const defs = { wave: 'S 4 12 9 6 15 18 20 12', ring: 'S 12 4 20 12 12 20 4 12 12 4' };
+  assert.equal(drawIcon('wave', { defs, wobble: 0 }).ink[0][0].startsWith('M4 12C'), true);
+  assert.match(drawIcon('ring', { defs, wobble: 0 }).ink[0][0], /Z$/);
+  const hand = drawIcon('wave', { defs });
+  assert.equal(hand.ink.length, 1, 'one stroke');
+  assert.match(hand.ink[0][0], /^M[\d. ]+(C[\d. ]+)+$/);
+  assert.notEqual(hand.ink[0][0], drawIcon('wave', { defs, wobble: 0 }).ink[0][0]);
+  assert.deepEqual(hand, drawIcon('wave', { defs }));
+  assert.equal(drawIcon('ring', { defs }).ink.length, 1);
+});
