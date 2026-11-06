@@ -22,6 +22,10 @@ Run in `icons/` on a branch from an up-to-date `main`:
 - [ ] New glyphs: inside the 1–23 grid, checked at 96 px and 24 px, listed in the CHANGELOG.
 - [ ] In the `site` repository: `npm run build:local` (uses `../icons`, run `npm run build` here first) succeeds and
       `node seo-check.mjs` reports 0 failures.
+- [ ] `npm run release-check` (`scripts/release-check.mjs`): package version, both lockfile versions, the top
+      CHANGELOG heading (dated) and the README `set.png?v=` all agree. Run it before tagging (step 7) and again after
+      the README image PR (step 13); it exits non-zero with one line per failed check. Before step 13 the README
+      line is expected to fail on a release that is not yet on the site.
 - [ ] No other icon set or library is named anywhere (code, docs, comments, package.json, commit messages).
 
 ## Steps
