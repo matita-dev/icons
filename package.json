@@ -75,6 +75,7 @@
   ],
   "scripts": {
     "lint:icons": "node scripts/lint.mjs",
+    "release-check": "node scripts/release-check.mjs",
     "build": "node scripts/lint.mjs && node scripts/build.mjs",
     "test": "node --test",
     "prepublishOnly": "npm run build && npm test"
