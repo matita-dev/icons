@@ -2,6 +2,23 @@
 
 Changes to `@matita/icons`. While the package is on 0.x, a minor version adds glyphs and a patch fixes things.
 
+## 0.6.0 — 2026-11-08
+
+81 new glyphs (302 → 383), a new `S` primitive for smooth lines, and four glyphs redrawn.
+
+- **Greek letters:** alpha, alpha-capital, beta, beta-capital, gamma, gamma-capital, delta, delta-capital, epsilon, epsilon-capital, zeta, zeta-capital, eta, eta-capital, theta, theta-capital, iota, iota-capital, kappa, kappa-capital, lambda, lambda-capital, mu, mu-capital, nu, nu-capital, xi, xi-capital, omicron, omicron-capital, pi, pi-capital, rho, rho-capital, sigma, sigma-capital, tau, tau-capital, upsilon, upsilon-capital, phi, phi-capital, chi, chi-capital, psi, psi-capital, omega, omega-capital
+- **Allergens:** egg, milk, peanut, wheat
+- **Dietary tags:** chefs-pick, gluten-free, pork-free, vegan
+- **Menu categories:** bowl, burger, drink, pizza-slice, salad, toast
+- **Restaurant service:** parking, wheelchair
+- **Everyday:** board-menu, cloche, folded-menu, food-app, food-menu, order-food, prices-menu, tent, utensils
+- **Money and treasure:** banknote, coins
+- **Nature:** anchor, paw-print, tree
+- **People and work:** list-checks, shield
+- **Brand:** matita
+- **New: `S` primitive.** One smooth line through a list of points (`S x y x y …`), for custom glyphs and built-in ones. It draws as an exact smooth curve at wobble 0 and in the same hand as the other primitives otherwise. Every other glyph draws exactly as in 0.5.2.
+- Four glyphs are redrawn (heart, heart-pulse, history and rotate-ccw have new drawings).
+
 ## 0.5.2 — 2026-11-03
 
 The package now includes `CHANGELOG.md`, so the website can read the release history from the published version.
