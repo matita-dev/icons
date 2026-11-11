@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /* Validates glyph sources: known primitives, right arity, on the 24 grid, and a drawable result. */
 import { DEFS } from '../src/defs.js';
+import { KEYWORDS } from '../src/keywords.js';
 import { drawIcon } from '../src/sketchify.js';
 
 const ARITY = { L: [4], P: 'pairs', Z: 'pairs', R: [4], C: [3], E: [4], A: [5], Q: [6], O: [2], B: 'bez', S: 'pairs' };
@@ -25,6 +26,16 @@ for (const [name, src] of Object.entries(DEFS)) {
     if (!g.ink.length && !g.dot) errors.push(`${name}: draws nothing`);
     if (JSON.stringify(g) !== JSON.stringify(drawIcon(name))) errors.push(`${name}: not deterministic`);
   } catch (e) { errors.push(`${name}: ${e.message}`); }
+}
+
+/* keywords: every glyph has some, every entry is a glyph, words are plain lowercase and not repeated */
+for (const n of Object.keys(DEFS)) if (!KEYWORDS[n]?.length) errors.push(`${n}: no keywords (add it to src/keywords.js)`);
+for (const [n, words] of Object.entries(KEYWORDS)) {
+  if (!DEFS[n]) errors.push(`keywords: "${n}" is not a glyph`);
+  const parts = new Set(n.split('-'));
+  for (const w of words) if (!/^[a-z0-9]+$/.test(w)) errors.push(`keywords ${n}: "${w}" must be one lowercase word`);
+  for (const w of words) if (parts.has(w)) errors.push(`keywords ${n}: "${w}" is already in the name`);
+  if (new Set(words).size !== words.length) errors.push(`keywords ${n}: repeated word`);
 }
 
 if (errors.length) { console.error(errors.join('\n')); process.exit(1); }

@@ -6,6 +6,7 @@ import { mkdir, rm, writeFile, readFile, copyFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DEFS, drawIcon } from '../src/sketchify.js';
+import { KEYWORDS } from '../src/keywords.js';
 import { toSvg, toSvgInner, pascal } from '../src/render.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -36,10 +37,12 @@ await write(dist('sprite.svg'),
   names.map(n => `<symbol id="${n}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" overflow="visible">${toSvgInner(icons[n])}</symbol>`).join('\n') +
   `\n</svg>\n`);
 await write(dist('icons.json'), js(icons) + '\n');
+await write(dist('keywords.json'), js(KEYWORDS) + '\n');
 await copyFile(src('pencil.css'), dist('pencil.css'));
 
 /* ESM: engine, renderer, per-icon data, index */
 await write(dist('esm/defs.js'), banner + await readFile(src('defs.js'), 'utf8'));
+await write(dist('esm/keywords.js'), banner + await readFile(src('keywords.js'), 'utf8'));
 await write(dist('esm/random.js'), banner + await readFile(src('random.js'), 'utf8'));
 await write(dist('esm/pencil.js'), banner + await readFile(src('pencil.js'), 'utf8'));
 await write(dist('esm/engine.js'), banner + await readFile(src('sketchify.js'), 'utf8'));
@@ -50,7 +53,7 @@ await write(dist('esm/all.js'),
   `\nexport const icons = {\n${names.map((n, i) => `  ${js(n)}: i${i}`).join(',\n')}\n};\n`);
 await write(dist('esm/index.js'), banner +
   names.map(n => `export { default as ${pascal(n)}, default as ${pascal(n)}Icon } from './icons/${n}.js';`).join('\n') +
-  `\nexport { icons } from './all.js';\nexport { DEFAULTS, iconPaths, iconAttrs, toSvg, toSvgInner, createElement, replaceIcons } from './render.js';\n` +
+  `\nexport { icons } from './all.js';\nexport { KEYWORDS } from './keywords.js';\nexport { DEFAULTS, iconPaths, iconAttrs, toSvg, toSvgInner, createElement, replaceIcons } from './render.js';\n` +
   `export const names = ${js(names)};\n`);
 
 /* React */
@@ -90,6 +93,8 @@ export declare function toSvgInner(icon: SketchIconData, opts?: SketchIconOption
 export declare function createElement(icon: SketchIconData, opts?: SketchIconOptions, doc?: Document): SVGSVGElement;
 export declare function replaceIcons(opts: SketchIconOptions & { icons: Record<string, SketchIconData>; attr?: string; root?: ParentNode }): void;
 export declare const icons: Record<SketchIconName, SketchIconData>;
+/** Search words per icon (synonyms like "bin" for trash); the name itself is not repeated */
+export declare const KEYWORDS: Record<SketchIconName, string[]>;
 export declare const names: SketchIconName[];
 ${names.map(n => `export declare const ${pascal(n)}: SketchIconData;\nexport declare const ${pascal(n)}Icon: SketchIconData;`).join('\n')}
 `);

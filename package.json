@@ -56,6 +56,7 @@
     "./exact/*.svg": "./dist/svg-exact/*.svg",
     "./sprite.svg": "./dist/sprite.svg",
     "./icons.json": "./dist/icons.json",
+    "./keywords.json": "./dist/keywords.json",
     "./pencil.css": "./dist/pencil.css",
     "./package.json": "./package.json"
   },
