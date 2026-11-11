@@ -203,3 +203,11 @@ test('S draws one smooth line through its points: exact at wobble 0, a hand at 1
   assert.deepEqual(hand, drawIcon('wave', { defs }));
   assert.equal(drawIcon('ring', { defs }).ink.length, 1);
 });
+
+test('every icon has search keywords, shipped as KEYWORDS and keywords.json', async () => {
+  const json = JSON.parse(await readFile(new URL('../dist/keywords.json', import.meta.url), 'utf8'));
+  assert.deepEqual(Object.keys(json), Object.keys(lib.KEYWORDS));
+  for (const n of lib.names) assert.ok(lib.KEYWORDS[n]?.length, `${n} has no keywords`);
+  assert.ok(lib.KEYWORDS.trash.includes('bin'));
+  assert.ok(lib.KEYWORDS.smile.includes('emoji'));
+});
