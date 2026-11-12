@@ -75,12 +75,13 @@ export function createElement(icon, opts = {}, doc = globalThis.document) {
 }
 
 /** Swap every <i data-sketch-icon="name"> (or any element) for its SVG.
+    Pass `aliases` (the ALIASES export) to accept alternate names too.
     Per-element overrides: data-size, data-stroke-width, data-color, data-pencil, data-rough, data-title, class. */
-export function replaceIcons({ icons, attr = 'data-sketch-icon', root = globalThis.document, ...opts } = {}) {
+export function replaceIcons({ icons, aliases = {}, attr = 'data-sketch-icon', root = globalThis.document, ...opts } = {}) {
   if (!icons) throw new Error('replaceIcons: pass { icons }');
   const doc = root.ownerDocument || root;
   root.querySelectorAll(`[${attr}]`).forEach(el => {
-    const name = el.getAttribute(attr), icon = icons[name] || icons[pascal(name)];
+    const name = el.getAttribute(attr), icon = icons[name] || icons[pascal(name)] || icons[aliases[name]];
     if (!icon) return console.warn(`sketch-icons: unknown icon "${name}"`);
     const d = el.dataset, o = { ...opts };
     if (d.size) o.size = +d.size || d.size;

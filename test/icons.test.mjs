@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { createElement as h } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as lib from '../dist/esm/index.js';
@@ -206,8 +207,97 @@ test('S draws one smooth line through its points: exact at wobble 0, a hand at 1
 
 test('every icon has search keywords, shipped as KEYWORDS and keywords.json', async () => {
   const json = JSON.parse(await readFile(new URL('../dist/keywords.json', import.meta.url), 'utf8'));
-  assert.deepEqual(Object.keys(json), Object.keys(lib.KEYWORDS));
+  const { aliases, approximateAliases, ...perGlyph } = json;
+  assert.deepEqual(Object.keys(perGlyph), Object.keys(lib.KEYWORDS));
+  assert.deepEqual(aliases, lib.ALIASES);
+  assert.deepEqual(approximateAliases, lib.APPROXIMATE_ALIASES);
   for (const n of lib.names) assert.ok(lib.KEYWORDS[n]?.length, `${n} has no keywords`);
   assert.ok(lib.KEYWORDS.trash.includes('bin'));
   assert.ok(lib.KEYWORDS.smile.includes('emoji'));
+});
+
+test('alternate names: every alias points at a real glyph and never shadows one', () => {
+  const aliases = Object.entries(lib.ALIASES);
+  assert.ok(aliases.length >= 100, 'the alias layer is not empty');
+  for (const [alias, target] of aliases) {
+    assert.ok(lib.names.includes(target), `${alias} -> ${target}: no such glyph`);
+    assert.ok(!lib.names.includes(alias), `${alias} collides with a glyph`);
+    assert.ok(!(alias in lib.icons), `${alias} is in the icons map`);
+    assert.match(alias, /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/, `${alias}: kebab-case`);
+    assert.ok(!(target in lib.ALIASES), `${alias} points at another alias`);
+  }
+  for (const a of lib.APPROXIMATE_ALIASES) assert.ok(a in lib.ALIASES, `${a}: approximate but not an alias`);
+  assert.equal(new Set(lib.APPROXIMATE_ALIASES).size, lib.APPROXIMATE_ALIASES.length);
+  assert.ok(lib.APPROXIMATE_ALIASES.includes('check-circle') && lib.APPROXIMATE_ALIASES.includes('settings-2'));
+  assert.ok(!lib.APPROXIMATE_ALIASES.includes('house'));
+  // names stay glyph-only; the reserved JSON field names are not glyphs
+  assert.deepEqual(lib.names, Object.keys(DEFS));
+  assert.ok(!lib.names.includes('aliases') && !lib.names.includes('approximateAliases'));
+});
+
+test('alternate names: X and XIcon exist in the main and React entries and draw the same as their glyph', () => {
+  const taken = new Set(lib.names.map(pascal));
+  for (const [alias, target] of Object.entries(lib.ALIASES)) {
+    const P = pascal(alias);
+    assert.ok(!taken.has(P), `${P}: export name already used`);
+    taken.add(P);
+    for (const key of [P, `${P}Icon`]) {
+      assert.equal(lib[key], lib.icons[target], `${key} is the data of ${target}`);
+      assert.equal(typeof R[key], 'object', `React ${key}`);
+      assert.equal(R[key], R[pascal(target)], `React ${key} is the component of ${target}`);
+    }
+    assert.equal(lib.toSvg(lib[P]), lib.toSvg(lib.icons[target]));
+  }
+  const spot = (n, props) => renderToStaticMarkup(h(R[n], props));
+  assert.equal(spot('House', { size: 20 }).replace('sketch-icon-home', ''), spot('Home', { size: 20 }).replace('sketch-icon-home', ''));
+  assert.equal(spot('HouseIcon'), spot('Home'));
+  assert.equal(spot('CheckCircle'), spot('CircleCheck'));
+});
+
+test('alternate names: icons.json carries aliases and the exports match it', async () => {
+  const json = JSON.parse(await readFile(new URL('../dist/icons.json', import.meta.url), 'utf8'));
+  assert.deepEqual(json.aliases, lib.ALIASES);
+  assert.deepEqual(json.approximateAliases, lib.APPROXIMATE_ALIASES);
+  assert.deepEqual(Object.keys(json).filter(k => k !== 'aliases' && k !== 'approximateAliases'), lib.names);
+  for (const [alias, target] of Object.entries(json.aliases)) {
+    assert.ok(json[target]?.ink, `${alias} -> ${target}`);
+    assert.ok(!(alias in json), `${alias} is also a glyph entry`);
+    assert.equal(typeof lib[pascal(alias)], 'object', `${alias} has an export`);
+  }
+  // every export that is not a glyph is an alias, in both name styles
+  const extra = Object.keys(lib).filter(k => typeof lib[k] === 'object' && lib[k]?.ink && !lib.names.some(n => pascal(n) === k || `${pascal(n)}Icon` === k));
+  assert.deepEqual(extra.sort(), Object.keys(lib.ALIASES).flatMap(a => [pascal(a), `${pascal(a)}Icon`]).sort());
+});
+
+test('alternate names: SketchIcon and replaceIcons accept them', () => {
+  assert.ok(R.SketchIcon.has('house') && R.SketchIcon.has('home') && !R.SketchIcon.has('nope'));
+  assert.ok(!R.SketchIcon.names.includes('house'), 'names lists glyphs only');
+  const strip = m => m.replace(/sketch-icon-[a-z0-9-]+/g, '');
+  assert.equal(strip(renderToStaticMarkup(h(R.SketchIcon, { name: 'house' }))), strip(renderToStaticMarkup(h(R.SketchIcon, { name: 'home' }))));
+  assert.equal(strip(renderToStaticMarkup(h(R.SketchIcon, { name: 'house', wobble: 0 }))), strip(renderToStaticMarkup(h(R.SketchIcon, { name: 'home', wobble: 0 }))));
+  assert.equal(renderToStaticMarkup(h(R.SketchIcon, { name: 'constructor' })), '');
+  const doc = { createElementNS: (_, tag) => ({ tag, attrs: {}, children: [], setAttribute(k, v) { this.attrs[k] = v; }, appendChild(c) { this.children.push(c); } }) };
+  const swap = aliases => {
+    let out;
+    const el = { dataset: {}, getAttribute: k => (k === 'data-sketch-icon' ? 'house' : null), replaceWith: s => { out = s; } };
+    lib.replaceIcons({ icons: lib.icons, aliases, root: { ownerDocument: doc, querySelectorAll: () => [el] } });
+    return out;
+  };
+  assert.ok(swap(lib.ALIASES), 'resolved with aliases');
+  assert.equal(swap(undefined), undefined, 'unknown without aliases, as before');
+});
+
+test('alternate names: aliases are pure re-exports, so a named import keeps tree-shaking', async () => {
+  const esbuild = await import('esbuild');
+  const bundle = async (entry, code) => (await esbuild.build({
+    stdin: { contents: code, resolveDir: fileURLToPath(new URL('../dist', import.meta.url)) },
+    bundle: true, minify: true, write: false, format: 'esm', external: ['react'], logLevel: 'silent'
+  })).outputFiles[0].text;
+  for (const [entry, via] of [['./esm/index.js', ''], ['./react/index.js', '']]) {
+    const alias = await bundle(entry, `import { House } from '${entry}'; console.log(House);`);
+    const glyph = await bundle(entry, `import { Home } from '${entry}'; console.log(Home);`);
+    assert.equal(alias.length, glyph.length, `${entry}: an alias costs nothing over its glyph`);
+    assert.ok(alias.length < 6000, `${entry}: one named import stays small (${alias.length} bytes)`);
+    assert.doesNotMatch(alias, /sketch-icon-ruler|"name":"ruler"/);
+  }
 });
