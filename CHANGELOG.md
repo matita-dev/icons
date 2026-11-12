@@ -6,7 +6,7 @@ Changes to `@matita/icons`. While the package is on 0.x, a minor version adds gl
 
 - **Alternate names:** 102 extra spellings that point at an existing glyph (`house` for `home`, `ellipsis` for `more-horizontal`, `circle-user` for `user-circle`, `x-circle` for `circle-x`, and more). Each is exported as `X` and `XIcon` from the main and React entries as a plain re-export of its glyph, accepted by `<SketchIcon name>` and the `SketchIconName` type, and listed in the new `ALIASES` export and the `aliases` field of `icons.json` and `keywords.json`. `APPROXIMATE_ALIASES` marks the ones where the glyph is the closest match. `names` and `icons` still hold the glyphs only.
 - `replaceIcons` takes an optional `aliases` map so the script-tag build can accept alternate names too.
-- **Fix:** the React renderer no longer sets `display:inline-block;flex:none` as an inline style, which overrode Tailwind and shadcn classes such as `hidden`, `inline`, `block` and `shrink`. The same defaults now come from a zero-specificity `:where(svg.sketch-icon)` rule in `pencil.css`, and a `style` prop you pass still wins. `overflow:visible` stays inline.
+- **Fix:** the React renderer no longer sets `display:inline-block;flex:none` as an inline style, which overrode Tailwind and shadcn classes such as `hidden`, `inline`, `block` and `shrink`. The same defaults now come from a zero-specificity `:where(svg.sketch-icon)` rule in `pencil.css`, and a `style` prop you pass still wins. `overflow:visible` stays inline. Import `@matita/icons/pencil.css` to get the `inline-block` and no-shrink defaults back; without it, icons use the browser defaults (so in a flex row add `shrink-0`).
 
 ## 0.6.0 — 2026-11-08
 

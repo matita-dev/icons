@@ -41,6 +41,8 @@ toSvg(Ruler, { size: 24 });               // SVG string
 
 Plain files: `@matita/icons/icons/<name>.svg`, `@matita/icons/pencil/<name>.svg`, `@matita/icons/exact/<name>.svg`, `@matita/icons/sprite.svg`, `@matita/icons/icons.json`. For the pencil grain, import `@matita/icons/pencil.css` (the `pencil/<name>.svg` files have it built in).
 
+`@matita/icons/pencil.css` also sets the icons' default layout (`display:inline-block; flex:none`) at zero specificity, so your own classes (`hidden`, `block`, `shrink`) still win. Without that import, icons use browser defaults: add `shrink-0` (and `min-w-0` on the text beside them) in flex rows.
+
 ## Using Matita with AI tools
 
 [matita.dev/llms.txt](https://matita.dev/llms.txt) is a short guide for AI assistants, and [matita.dev/icons.json](https://matita.dev/icons.json) lists every icon with the version that added it, so a tool can check a name exists instead of guessing. The icon names are also a typed union (`SketchIconName`) for TypeScript.
