@@ -45,6 +45,18 @@ Plain files: `@matita/icons/icons/<name>.svg`, `@matita/icons/pencil/<name>.svg`
 
 [matita.dev/llms.txt](https://matita.dev/llms.txt) is a short guide for AI assistants, and [matita.dev/icons.json](https://matita.dev/icons.json) lists every icon with the version that added it, so a tool can check a name exists instead of guessing. The icon names are also a typed union (`SketchIconName`) for TypeScript.
 
+## Alternate names
+
+Some icons are known by more than one name, so Matita also exports a few spellings that point at an existing glyph: `House` and `Home`, `Ellipsis` and `MoreHorizontal`, `CheckCircle` and `CircleCheck`. An alternate name draws the glyph it points at, in both name styles (`House` and `HouseIcon`), from `@matita/icons` and `@matita/icons/react`, and `<SketchIcon name="house" />` accepts it too. They are plain re-exports, so importing one pulls in only that glyph.
+
+```jsx
+import { House } from '@matita/icons/react';   // the same drawing as Home
+```
+
+The full list is `ALIASES` (alternate name to glyph), also the `aliases` field of `icons.json` and `keywords.json`, and the `SketchIconName` type accepts both kinds of name. `APPROXIMATE_ALIASES` (`approximateAliases` in the JSON) lists the ones where the glyph is the closest match rather than the same drawing, for example `CheckCircle`, `BarChart` and `Settings2`. `names` and `icons` still hold the glyphs only. For the plain script tag, pass the list along: `SketchIcons.replaceIcons({ icons: SketchIcons.icons, aliases: SketchIcons.ALIASES })`.
+
+Two glyphs are drawn differently from what the same name suggests elsewhere, so check them before relying on a name: `chart-bar` is vertical bars on an axis (there is no alias for horizontal bars), and `loader` is a single open arc, which is what `loader-circle` and `loader-2` show too.
+
 ## Wobble: from sketch to exact shapes
 
 `wobble` goes from 1 (the default: the full hand) down to 0 (the same glyph as exact shapes: true lines, circles, arcs and square corners, no overshoot). In between you get a calmer hand.

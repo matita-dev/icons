@@ -7,6 +7,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DEFS, drawIcon } from '../src/sketchify.js';
 import { KEYWORDS } from '../src/keywords.js';
+import { ALIASES, APPROXIMATE_ALIASES } from '../src/aliases.js';
 import { toSvg, toSvgInner, pascal } from '../src/render.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -18,6 +19,11 @@ const banner = `/*! ${pkg.name} v${pkg.version} · ${pkg.license} */\n`;
 const names = Object.keys(DEFS);
 const icons = Object.fromEntries(names.map(n => [n, drawIcon(n)]));
 const js = v => JSON.stringify(v);
+const aliasNames = Object.keys(ALIASES);
+/* alias exports are plain re-exports of the target's module, so a bundler only keeps what is imported */
+const aliasExports = dir => aliasNames.map(a => `export { default as ${pascal(a)}, default as ${pascal(a)}Icon } from '${dir}/${ALIASES[a]}.js';`).join('\n');
+const aliasDecls = aliasNames.map(a => `export declare const ${pascal(a)}: SketchIconData;\nexport declare const ${pascal(a)}Icon: SketchIconData;`).join('\n');
+const aliasDeclsReact = aliasNames.map(a => `export declare const ${pascal(a)}: SketchIconComponent;\nexport declare const ${pascal(a)}Icon: SketchIconComponent;`).join('\n');
 
 await rm(join(root, 'dist'), { recursive: true, force: true });
 
@@ -36,12 +42,14 @@ await write(dist('sprite.svg'),
   `<svg xmlns="http://www.w3.org/2000/svg" style="display:none">\n` +
   names.map(n => `<symbol id="${n}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" overflow="visible">${toSvgInner(icons[n])}</symbol>`).join('\n') +
   `\n</svg>\n`);
-await write(dist('icons.json'), js(icons) + '\n');
-await write(dist('keywords.json'), js(KEYWORDS) + '\n');
+/* both JSON files are one entry per glyph, then two reserved fields: aliases (alternate name -> glyph) and approximateAliases */
+await write(dist('icons.json'), js({ ...icons, aliases: ALIASES, approximateAliases: APPROXIMATE_ALIASES }) + '\n');
+await write(dist('keywords.json'), js({ ...KEYWORDS, aliases: ALIASES, approximateAliases: APPROXIMATE_ALIASES }) + '\n');
 await copyFile(src('pencil.css'), dist('pencil.css'));
 
 /* ESM: engine, renderer, per-icon data, index */
 await write(dist('esm/defs.js'), banner + await readFile(src('defs.js'), 'utf8'));
+await write(dist('esm/aliases.js'), banner + await readFile(src('aliases.js'), 'utf8'));
 await write(dist('esm/keywords.js'), banner + await readFile(src('keywords.js'), 'utf8'));
 await write(dist('esm/random.js'), banner + await readFile(src('random.js'), 'utf8'));
 await write(dist('esm/pencil.js'), banner + await readFile(src('pencil.js'), 'utf8'));
@@ -53,7 +61,7 @@ await write(dist('esm/all.js'),
   `\nexport const icons = {\n${names.map((n, i) => `  ${js(n)}: i${i}`).join(',\n')}\n};\n`);
 await write(dist('esm/index.js'), banner +
   names.map(n => `export { default as ${pascal(n)}, default as ${pascal(n)}Icon } from './icons/${n}.js';`).join('\n') +
-  `\nexport { icons } from './all.js';\nexport { KEYWORDS } from './keywords.js';\nexport { DEFAULTS, iconPaths, iconAttrs, toSvg, toSvgInner, createElement, replaceIcons } from './render.js';\n` +
+  `\n${aliasExports('./icons')}\nexport { icons } from './all.js';\nexport { KEYWORDS } from './keywords.js';\nexport { ALIASES, APPROXIMATE_ALIASES } from './aliases.js';\nexport { DEFAULTS, iconPaths, iconAttrs, toSvg, toSvgInner, createElement, replaceIcons } from './render.js';\n` +
   `export const names = ${js(names)};\n`);
 
 /* React */
@@ -63,11 +71,16 @@ for (const n of names) await write(dist(`react/icons/${n}.js`),
   `import { createSketchIcon } from '../base.js';\nimport icon from '../../esm/icons/${n}.js';\nexport default /*#__PURE__*/createSketchIcon(icon);\n`);
 await write(dist('react/index.js'), banner +
   names.map(n => `export { default as ${pascal(n)}, default as ${pascal(n)}Icon } from './icons/${n}.js';`).join('\n') +
-  `\nexport { SketchIconContext, SketchIconProvider, createSketchIcon } from './base.js';\nexport { SketchIcon } from './sketch-icon.js';\n`);
+  `\n${aliasExports('./icons')}\nexport { SketchIconContext, SketchIconProvider, createSketchIcon } from './base.js';\nexport { SketchIcon } from './sketch-icon.js';\n`);
 
 /* types */
-const nameUnion = names.map(js).join(' | ');
-await write(dist('esm/index.d.ts'), `export type SketchIconName = ${nameUnion};
+const nameUnion = names.map(js).join(' | '), aliasUnion = aliasNames.map(js).join(' | ');
+await write(dist('esm/index.d.ts'), `/** The glyphs themselves, one per drawing */
+export type SketchGlyphName = ${nameUnion};
+/** Alternate names that resolve to a glyph (see ALIASES) */
+export type SketchAliasName = ${aliasUnion};
+/** Any name a component, \`SketchIcon\` or a lookup accepts: a glyph or an alternate name */
+export type SketchIconName = SketchGlyphName | SketchAliasName;
 export interface SketchIconData {
   name: string;
   /** [path d, width multiplier] per stroke */
@@ -91,12 +104,18 @@ export declare function iconAttrs(icon: SketchIconData, opts?: SketchIconOptions
 export declare function toSvg(icon: SketchIconData, opts?: SketchIconOptions): string;
 export declare function toSvgInner(icon: SketchIconData, opts?: SketchIconOptions): string;
 export declare function createElement(icon: SketchIconData, opts?: SketchIconOptions, doc?: Document): SVGSVGElement;
-export declare function replaceIcons(opts: SketchIconOptions & { icons: Record<string, SketchIconData>; attr?: string; root?: ParentNode }): void;
-export declare const icons: Record<SketchIconName, SketchIconData>;
+export declare function replaceIcons(opts: SketchIconOptions & { icons: Record<string, SketchIconData>; /** alternate name to glyph name; pass ALIASES to accept alternate names */ aliases?: Record<string, string>; attr?: string; root?: ParentNode }): void;
+export declare const icons: Record<SketchGlyphName, SketchIconData>;
 /** Search words per icon (synonyms like "bin" for trash); the name itself is not repeated */
-export declare const KEYWORDS: Record<SketchIconName, string[]>;
-export declare const names: SketchIconName[];
+export declare const KEYWORDS: Record<SketchGlyphName, string[]>;
+/** Alternate name to the glyph it draws (also the \`aliases\` field of icons.json and keywords.json) */
+export declare const ALIASES: Record<SketchAliasName, SketchGlyphName>;
+/** Aliases whose glyph is the closest match rather than the same drawing */
+export declare const APPROXIMATE_ALIASES: SketchAliasName[];
+/** Glyph names only; alternate names are in ALIASES */
+export declare const names: SketchGlyphName[];
 ${names.map(n => `export declare const ${pascal(n)}: SketchIconData;\nexport declare const ${pascal(n)}Icon: SketchIconData;`).join('\n')}
+${aliasDecls}
 `);
 await write(dist('esm/engine.d.ts'), `import type { SketchIconData } from './index.js';
 /** Built-in glyph sources: drafting primitives on a 24 grid (L line · P polyline · Z closed · R rect · C circle · E ellipse · A arc · Q curve · S smooth line · B Bezier path · O dot). */
@@ -114,8 +133,8 @@ export declare function prng(seed: number): () => number;
 `);
 await write(dist('esm/defs.d.ts'), `export declare const DEFS: Record<string, string>;\n`);
 await write(dist('react/index.d.ts'), `import * as React from 'react';
-import type { SketchIconData, SketchIconName } from '../esm/index.js';
-export type { SketchIconData, SketchIconName };
+import type { SketchIconData, SketchIconName, SketchGlyphName, SketchAliasName } from '../esm/index.js';
+export type { SketchIconData, SketchIconName, SketchGlyphName, SketchAliasName };
 export interface SketchIconProps extends Omit<React.SVGProps<SVGSVGElement>, 'ref' | 'color' | 'strokeWidth'> {
   /** px, default 16 */ size?: number | string;
   /** CSS colour, default currentColor */ color?: string;
@@ -130,10 +149,11 @@ export declare const SketchIconContext: React.Context<Pick<SketchIconProps, 'siz
 export declare function SketchIconProvider(props: Pick<SketchIconProps, 'size' | 'color' | 'strokeWidth' | 'pencil' | 'rough'> & { children?: React.ReactNode }): React.JSX.Element;
 export declare function createSketchIcon(icon: SketchIconData): SketchIconComponent;
 export declare const SketchIcon: React.ForwardRefExoticComponent<SketchIconProps & { name: SketchIconName; seed?: number; /** 0 = exact shapes, 1 = the full hand (default) */ wobble?: number } & React.RefAttributes<SVGSVGElement>> & {
-  names: SketchIconName[];
+  names: SketchGlyphName[];
   has(name: string): name is SketchIconName;
 };
 ${names.map(n => `export declare const ${pascal(n)}: SketchIconComponent;\nexport declare const ${pascal(n)}Icon: SketchIconComponent;`).join('\n')}
+${aliasDeclsReact}
 `);
 
 /* UMD / CDN build: window.SketchIcons */

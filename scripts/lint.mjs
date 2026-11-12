@@ -2,6 +2,7 @@
 /* Validates glyph sources: known primitives, right arity, on the 24 grid, and a drawable result. */
 import { DEFS } from '../src/defs.js';
 import { KEYWORDS } from '../src/keywords.js';
+import { ALIASES, APPROXIMATE_ALIASES } from '../src/aliases.js';
 import { drawIcon } from '../src/sketchify.js';
 
 const ARITY = { L: [4], P: 'pairs', Z: 'pairs', R: [4], C: [3], E: [4], A: [5], Q: [6], O: [2], B: 'bez', S: 'pairs' };
@@ -38,5 +39,20 @@ for (const [n, words] of Object.entries(KEYWORDS)) {
   if (new Set(words).size !== words.length) errors.push(`keywords ${n}: repeated word`);
 }
 
+/* aliases: kebab-case, point at a real glyph (not at another alias), never shadow a glyph, and the JSON field names stay free */
+const pascalOf = n => n.replace(/(^|-)([a-z0-9])/g, (_, __, c) => c.toUpperCase());
+const exportNames = new Map(Object.keys(DEFS).map(n => [pascalOf(n), n]));
+for (const [a, target] of Object.entries(ALIASES)) {
+  if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(a)) errors.push(`alias ${a}: names are lower kebab-case`);
+  if (DEFS[a]) errors.push(`alias ${a}: this name is already a glyph`);
+  if (!DEFS[target]) errors.push(`alias ${a}: target "${target}" is not a glyph`);
+  const taken = exportNames.get(pascalOf(a));
+  if (taken) errors.push(`alias ${a}: export name ${pascalOf(a)} is already used by ${taken}`);
+  exportNames.set(pascalOf(a), a);
+}
+for (const reserved of ['aliases', 'approximateAliases']) if (DEFS[reserved]) errors.push(`${reserved}: reserved for the JSON files, not a glyph name`);
+for (const a of APPROXIMATE_ALIASES) if (!ALIASES[a]) errors.push(`approximate alias "${a}" is not in ALIASES`);
+if (new Set(APPROXIMATE_ALIASES).size !== APPROXIMATE_ALIASES.length) errors.push('APPROXIMATE_ALIASES: repeated name');
+
 if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
-console.log(`${Object.keys(DEFS).length} glyphs ok`);
+console.log(`${Object.keys(DEFS).length} glyphs ok, ${Object.keys(ALIASES).length} aliases ok`);

@@ -2,6 +2,11 @@
 
 Changes to `@matita/icons`. While the package is on 0.x, a minor version adds glyphs and a patch fixes things.
 
+## Unreleased
+
+- **Alternate names:** 102 extra spellings that point at an existing glyph (`house` for `home`, `ellipsis` for `more-horizontal`, `circle-user` for `user-circle`, `x-circle` for `circle-x`, and more). Each is exported as `X` and `XIcon` from the main and React entries as a plain re-export of its glyph, accepted by `<SketchIcon name>` and the `SketchIconName` type, and listed in the new `ALIASES` export and the `aliases` field of `icons.json` and `keywords.json`. `APPROXIMATE_ALIASES` marks the ones where the glyph is the closest match. `names` and `icons` still hold the glyphs only.
+- `replaceIcons` takes an optional `aliases` map so the script-tag build can accept alternate names too.
+
 ## 0.6.0 — 2026-11-08
 
 81 new glyphs (302 → 383), a new `S` primitive for smooth lines, and four glyphs redrawn.
