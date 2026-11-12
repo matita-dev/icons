@@ -301,3 +301,15 @@ test('alternate names: aliases are pure re-exports, so a named import keeps tree
     assert.doesNotMatch(alias, /sketch-icon-ruler|"name":"ruler"/);
   }
 });
+
+test('renderer: no inline display or flex, so utility classes win; a user style still wins', () => {
+  const hidden = renderToStaticMarkup(h(R.ChevronDown, { className: 'hidden group-aria-expanded:inline shrink-0' }));
+  assert.match(hidden, /class="sketch-icon sketch-icon-chevron-down hidden group-aria-expanded:inline shrink-0"/);
+  assert.doesNotMatch(hidden, /display|flex/);
+  assert.match(hidden, /style="overflow:visible"/);
+  const user = renderToStaticMarkup(h(R.ChevronDown, { style: { display: 'block', flex: '1 1 auto', color: 'red' } }));
+  assert.match(user, /display:block/);
+  assert.match(user, /flex:1 1 auto/);
+  assert.match(user, /color:red/);
+  assert.match(user, /overflow:visible/);
+});

@@ -25,7 +25,8 @@ export function renderSketchIcon(icon, props, ref, ctx = {}) {
     role: title || own.labelled ? 'img' : undefined, 'aria-label': title,
     'aria-hidden': title || own.any ? undefined : 'true',
     ...rest,
-    style: { display: 'inline-block', flex: 'none', overflow: 'visible', ...style }
+    /* no display or flex here: an inline style would beat utility classes (hidden, inline, shrink) */
+    style: { overflow: 'visible', ...style }
   },
   title ? h('title', null, title) : null,
   iconPaths(icon, { strokeWidth: sw, pencil, rough }).map((p, i) =>
