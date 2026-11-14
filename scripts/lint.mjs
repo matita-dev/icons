@@ -3,6 +3,7 @@
 import { DEFS } from '../src/defs.js';
 import { KEYWORDS } from '../src/keywords.js';
 import { ALIASES, APPROXIMATE_ALIASES } from '../src/aliases.js';
+import { SHADCN_ICONS } from '../src/shadcn-names.js';
 import { drawIcon } from '../src/sketchify.js';
 
 const ARITY = { L: [4], P: 'pairs', Z: 'pairs', R: [4], C: [3], E: [4], A: [5], Q: [6], O: [2], B: 'bez', S: 'pairs' };
@@ -53,6 +54,14 @@ for (const [a, target] of Object.entries(ALIASES)) {
 for (const reserved of ['aliases', 'approximateAliases']) if (DEFS[reserved]) errors.push(`${reserved}: reserved for the JSON files, not a glyph name`);
 for (const a of APPROXIMATE_ALIASES) if (!ALIASES[a]) errors.push(`approximate alias "${a}" is not in ALIASES`);
 if (new Set(APPROXIMATE_ALIASES).size !== APPROXIMATE_ALIASES.length) errors.push('APPROXIMATE_ALIASES: repeated name');
+
+/* shadcn entry: every export draws a real glyph or alternate name, spelled like a component. Component libraries match
+   icons with [class*='size-'], and every icon carries the class sketch-icon-<name>, so no name may contain "size-". */
+for (const [e, t] of Object.entries(SHADCN_ICONS)) {
+  if (!/^[A-Z][A-Za-z0-9]*$/.test(e)) errors.push(`shadcn ${e}: not a component name`);
+  if (!DEFS[t] && !ALIASES[t]) errors.push(`shadcn ${e}: "${t}" is neither a glyph nor an alternate name`);
+}
+for (const n of [...Object.keys(DEFS), ...Object.keys(ALIASES)]) if (n.includes('size-')) errors.push(`${n}: a name containing "size-" would trip size-based CSS selectors`);
 
 if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
 console.log(`${Object.keys(DEFS).length} glyphs ok, ${Object.keys(ALIASES).length} aliases ok`);

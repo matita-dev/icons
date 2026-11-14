@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { DEFS, drawIcon } from '../src/sketchify.js';
 import { KEYWORDS } from '../src/keywords.js';
 import { ALIASES, APPROXIMATE_ALIASES } from '../src/aliases.js';
+import { SHADCN_ICONS } from '../src/shadcn-names.js';
 import { toSvg, toSvgInner, pascal } from '../src/render.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -72,6 +73,15 @@ for (const n of names) await write(dist(`react/icons/${n}.js`),
 await write(dist('react/index.js'), banner +
   names.map(n => `export { default as ${pascal(n)}, default as ${pascal(n)}Icon } from './icons/${n}.js';`).join('\n') +
   `\n${aliasExports('./icons')}\nexport { SketchIconContext, SketchIconProvider, createSketchIcon } from './base.js';\nexport { SketchIcon } from './sketch-icon.js';\n`);
+
+/* shadcn entry: one component per name in src/shadcn-names.js, each drawing a glyph (or an alternate name's glyph) */
+const shadcnRows = Object.entries(SHADCN_ICONS).map(([e, t]) => [e, ALIASES[t] ?? t]);
+await write(dist('react/shadcn-base.js'), banner + await readFile(src('react/shadcn.js'), 'utf8'));
+await write(dist('react/shadcn.js'), banner + [
+  "import { createShadcnIcon } from './shadcn-base.js';",
+  ...[...new Set(shadcnRows.map(r => r[1]))].map(g => `import ${pascal(g)}Data from '../esm/icons/${g}.js';`),
+  ...shadcnRows.map(([e, g]) => `export const ${e} = /*#__PURE__*/createShadcnIcon(${pascal(g)}Data, '${e}');`)
+].join('\n') + '\n');
 
 /* types */
 const nameUnion = names.map(js).join(' | '), aliasUnion = aliasNames.map(js).join(' | ');
@@ -138,7 +148,7 @@ export type { SketchIconData, SketchIconName, SketchGlyphName, SketchAliasName }
 export interface SketchIconProps extends Omit<React.SVGProps<SVGSVGElement>, 'ref' | 'color' | 'strokeWidth'> {
   /** px, default 16 */ size?: number | string;
   /** CSS colour, default currentColor */ color?: string;
-  /** stroke width on the 24 grid, default 1.6 (≈1px at 16px) */ strokeWidth?: number;
+  /** stroke width on the 24 grid, default 1.6 (≈1px at 16px) */ strokeWidth?: number | string;
   /** alias of strokeWidth */ weight?: number;
   /** pencil variant: every stroke drawn as two or three loose pencil lines (pair with pencil.css for the paper grain) */ pencil?: boolean;
   /** pencil texture, 0 (default) to 1: wider, looser lines and a coarser paper (with pencil.css). Shape is \`wobble\`'s job */ rough?: number;
@@ -155,6 +165,12 @@ export declare const SketchIcon: React.ForwardRefExoticComponent<SketchIconProps
 ${names.map(n => `export declare const ${pascal(n)}: SketchIconComponent;\nexport declare const ${pascal(n)}Icon: SketchIconComponent;`).join('\n')}
 ${aliasDeclsReact}
 `);
+
+await write(dist('react/shadcn.d.ts'), [
+  "import type { SketchIconComponent } from './index.js';",
+  "export type { SketchIconProps, SketchIconComponent } from './index.js';",
+  ...shadcnRows.map(([e]) => `export declare const ${e}: SketchIconComponent;`)
+].join('\n') + '\n');
 
 /* UMD / CDN build: window.SketchIcons */
 const esbuild = await import('esbuild');
