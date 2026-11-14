@@ -31,6 +31,9 @@
       "react": [
         "./dist/react/index.d.ts"
       ],
+      "shadcn": [
+        "./dist/react/shadcn.d.ts"
+      ],
       "engine": [
         "./dist/esm/engine.d.ts"
       ]
@@ -46,6 +49,10 @@
     "./react": {
       "types": "./dist/react/index.d.ts",
       "default": "./dist/react/index.js"
+    },
+    "./shadcn": {
+      "types": "./dist/react/shadcn.d.ts",
+      "default": "./dist/react/shadcn.js"
     },
     "./engine": {
       "types": "./dist/esm/engine.d.ts",

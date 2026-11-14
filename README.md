@@ -43,6 +43,35 @@ Plain files: `@matita/icons/icons/<name>.svg`, `@matita/icons/pencil/<name>.svg`
 
 `@matita/icons/pencil.css` also sets the icons' default layout (`display:inline-block; flex:none`) at zero specificity, so your own classes (`hidden`, `block`, `shrink`) still win. Without that import, icons use browser defaults: add `shrink-0` (and `min-w-0` on the text beside them) in flex rows.
 
+## Use Matita in shadcn/ui
+
+`@matita/icons/shadcn` exports 166 components named exactly like the icon names the shadcn CLI writes into the components it installs (`ChevronDownIcon`, `CheckIcon`, `Loader2Icon`, plus a few bare ones such as `BadgeCheck` and `Send`). Each one draws a Matita glyph or one of its alternate names, forwards its `ref`, and passes `className`, `data-icon`, `data-slot` and `aria-*` to the `<svg>`. Every name the base, radix and aria component sets use resolves to a drawing: nothing is stubbed.
+
+```sh
+npm i @matita/icons
+```
+
+```jsx
+import { ChevronDownIcon, SearchIcon } from '@matita/icons/shadcn';
+```
+
+**Installed components.** The `iconLibrary` field of `components.json` is a closed list of built-in libraries today, and the CLI leaves a value it does not know unchanged in the installed file, so a custom value does not work yet (there is an open upstream proposal to accept an import path). Until then, install with any built-in value and point the imports at Matita with one replacement, for example in each file under `components/ui`:
+
+```powershell
+# swap the module the CLI imported for Matita
+Get-ChildItem components,hooks -Recurse -Include *.tsx,*.ts | ForEach-Object { (Get-Content $_) -replace 'from "<package the CLI imported>"','from "@matita/icons/shadcn"' | Set-Content $_ }
+```
+
+```sh
+grep -rl 'from "<package the CLI imported>"' components hooks | xargs sed -i 's#from "<package the CLI imported>"#from "@matita/icons/shadcn"#'
+```
+
+Check the result with your type checker: a name that is not exported is an error, never a silent fallback. This works for the base, radix and aria component sets (the `nova`, `vega`, `maia`, `lyra`, `mira`, `luma`, `sera` and `rhea` presets). The `new-york-v4` and legacy styles import their icon package directly in every file, so no `iconLibrary` value reaches them; for those, alias that package name to `@matita/icons/shadcn` in your bundler (`resolve.alias` in Vite, `turbopack.resolveAlias` and `webpack` aliases in Next.js, `paths` for TypeScript), which is a stop-gap rather than a supported route.
+
+**Defaults.** The shadcn components size their icons with CSS (`size-4` and friends), which wins over the `width` and `height` attributes, so the fallback size only matters for an icon you use bare: it is 24 here (16 for the other entries). The stroke is the usual 1.6; for a heavier line pass `strokeWidth={2}` or wrap the app once in `<SketchIconProvider strokeWidth={2}>` (from `@matita/icons/react`; a `size` there overrides the 24 as well). No provider is required.
+
+**CSS.** The entry does not import any CSS, so it works in a server component, a bundler without CSS support, and Node. That means icons use browser defaults for `display` and `flex`, which is what the shadcn components expect (they set `shrink-0` and sizing themselves, and toggle icons with `hidden` and `inline`, which work because the renderer sets no inline `display`). Import `@matita/icons/pencil.css` once if you want Matita's inline-block and no-shrink defaults for icons in your own markup, or the paper grain of the pencil variant.
+
 ## Using Matita with AI tools
 
 [matita.dev/llms.txt](https://matita.dev/llms.txt) is a short guide for AI assistants, and [matita.dev/icons.json](https://matita.dev/icons.json) lists every icon with the version that added it, so a tool can check a name exists instead of guessing. The icon names are also a typed union (`SketchIconName`) for TypeScript.
