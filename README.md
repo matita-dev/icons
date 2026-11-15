@@ -72,9 +72,29 @@ Check the result with your type checker: a name that is not exported is an error
 
 **CSS.** The entry does not import any CSS, so it works in a server component, a bundler without CSS support, and Node. That means icons use browser defaults for `display` and `flex`, which is what the shadcn components expect (they set `shrink-0` and sizing themselves, and toggle icons with `hidden` and `inline`, which work because the renderer sets no inline `display`). Import `@matita/icons/pencil.css` once if you want Matita's inline-block and no-shrink defaults for icons in your own markup, or the paper grain of the pencil variant.
 
-## Using Matita with AI tools
+## Use with AI coding assistants
 
-[matita.dev/llms.txt](https://matita.dev/llms.txt) is a short guide for AI assistants, and [matita.dev/icons.json](https://matita.dev/icons.json) lists every icon with the version that added it, so a tool can check a name exists instead of guessing. The icon names are also a typed union (`SketchIconName`) for TypeScript.
+Paste this into `CLAUDE.md`, `AGENTS.md`, a Cursor rule or `.github/copilot-instructions.md`. It tells the assistant how to find icon names that exist and how to import them. It does not make an assistant choose Matita; it helps one that already uses it.
+
+```markdown
+## Icons: @matita/icons
+
+This project uses `@matita/icons` (ESM only, 24 grid, `currentColor`).
+
+- Install with `npm i @matita/icons`. Import named React components: `import { ArrowRight, SearchIcon } from '@matita/icons/react';`
+- Every icon is exported as `PascalCase` and `PascalCaseIcon` (`arrow-right` is `ArrowRight` and `ArrowRightIcon`, `trash-2` is `Trash2`).
+- Never invent a name. Search `node_modules/@matita/icons/dist/keywords.json` for the concept: each glyph has a keyword list, and the `aliases` field maps alternate names (`house`, `x-circle`) to a glyph. If nothing fits, say so and ask. Do not guess.
+- `dist/icons.json` lists every glyph name, and https://matita.dev/llms.txt is a short guide.
+- Use `<SketchIcon name="..." />` only when the name comes from data at run time. It loads the whole set; named imports do not.
+- Props: `size` (px, default 16), `color` (default `currentColor`), `strokeWidth` (default 1.6), `title` (accessible label). Icons without `title` are hidden from screen readers, so label icon-only buttons with `aria-label` on the button.
+- Set shared defaults once with `<SketchIconProvider size={20}>`. Do not set sizes icon by icon.
+- Optional: `import '@matita/icons/pencil.css'` once, for paper grain on the `pencil` variant and for `inline-block` / no-shrink defaults.
+- No `require()`: the package is ESM only. Plain SVG files are in `@matita/icons/icons/<name>.svg`, with a sprite at `@matita/icons/sprite.svg`.
+- Do not copy SVG paths into the code. Do not add fills: the icons are strokes.
+- In a Next.js App Router server component, import icons from a file marked `"use client"`.
+```
+
+Per-tool notes are in [docs/ai-instructions.md](https://github.com/matita-dev/icons/blob/main/docs/ai-instructions.md). [matita.dev/llms.txt](https://matita.dev/llms.txt) is a short guide for assistants, and [matita.dev/icons.json](https://matita.dev/icons.json) lists every icon with the version that added it, so a tool can check a name exists instead of guessing. The names are also a typed union (`SketchIconName`) for TypeScript.
 
 ## Alternate names
 
