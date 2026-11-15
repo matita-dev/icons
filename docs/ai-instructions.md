@@ -11,8 +11,8 @@ This project uses `@matita/icons` (ESM only, 24 grid, `currentColor`).
 
 - Install with `npm i @matita/icons`. Import named React components: `import { ArrowRight, SearchIcon } from '@matita/icons/react';`
 - Every icon is exported as `PascalCase` and `PascalCaseIcon` (`arrow-right` is `ArrowRight` and `ArrowRightIcon`, `trash-2` is `Trash2`).
-- Never invent a name. Search `node_modules/@matita/icons/dist/keywords.json` for the concept: each glyph has a keyword list, and the `aliases` field maps alternate names (`house`, `x-circle`) to a glyph. If nothing fits, say so and ask. Do not guess.
-- `dist/icons.json` lists every glyph name, and https://matita.dev/llms.txt is a short guide.
+- Never invent a name. Search `node_modules/@matita/icons/dist/keywords.json` for the concept: it has every glyph name with a keyword list, and the `aliases` field maps alternate names (`house`, `x-circle`) to a glyph. If nothing fits, say so and ask. Do not guess.
+- Do not read `dist/icons.json` whole: it is about 244 KB of path data. `keywords.json` (about 26 KB) has every name. https://matita.dev/llms.txt is a short guide.
 - Use `<SketchIcon name="..." />` only when the name comes from data at run time. It loads the whole set; named imports do not.
 - Props: `size` (px, default 16), `color` (default `currentColor`), `strokeWidth` (default 1.6), `title` (accessible label). Icons without `title` are hidden from screen readers, so label icon-only buttons with `aria-label` on the button.
 - Set shared defaults once with `<SketchIconProvider size={20}>`. Do not set sizes icon by icon.
