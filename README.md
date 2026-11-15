@@ -70,7 +70,7 @@ Check the result with your type checker: a name that is not exported is an error
 
 **Defaults.** The shadcn components size their icons with CSS (`size-4` and friends), which wins over the `width` and `height` attributes, so the fallback size only matters for an icon you use bare: it is 24 here (16 for the other entries). The stroke is the usual 1.6; for a heavier line pass `strokeWidth={2}` or wrap the app once in `<SketchIconProvider strokeWidth={2}>` (from `@matita/icons/react`; a `size` there overrides the 24 as well). No provider is required.
 
-**CSS.** The entry does not import any CSS, so it works in a server component, a bundler without CSS support, and Node. That means icons use browser defaults for `display` and `flex`, which is what the shadcn components expect (they set `shrink-0` and sizing themselves, and toggle icons with `hidden` and `inline`, which work because the renderer sets no inline `display`). Import `@matita/icons/pencil.css` once if you want Matita's inline-block and no-shrink defaults for icons in your own markup, or the paper grain of the pencil variant.
+**CSS.** The entry does not import any CSS, so it works in a bundler without CSS support and in Node. Every module in the React and shadcn entries starts with the `"use client"` directive, so in a Next.js App Router server component you can import an icon directly; it renders as a client component, and the props you pass must be serializable. That means icons use browser defaults for `display` and `flex`, which is what the shadcn components expect (they set `shrink-0` and sizing themselves, and toggle icons with `hidden` and `inline`, which work because the renderer sets no inline `display`). Import `@matita/icons/pencil.css` once if you want Matita's inline-block and no-shrink defaults for icons in your own markup, or the paper grain of the pencil variant.
 
 ## Use with AI coding assistants
 
@@ -84,17 +84,17 @@ This project uses `@matita/icons` (ESM only, 24 grid, `currentColor`).
 - Install with `npm i @matita/icons`. Import named React components: `import { ArrowRight, SearchIcon } from '@matita/icons/react';`
 - Every icon is exported as `PascalCase` and `PascalCaseIcon` (`arrow-right` is `ArrowRight` and `ArrowRightIcon`, `trash-2` is `Trash2`).
 - Never invent a name. Search `node_modules/@matita/icons/dist/keywords.json` for the concept: it has every glyph name with a keyword list, and the `aliases` field maps alternate names (`house`, `x-circle`) to a glyph. If nothing fits, say so and ask. Do not guess.
-- Do not read `dist/icons.json` whole: it is about 244 KB of path data. `keywords.json` (about 26 KB) has every name. https://matita.dev/llms.txt is a short guide.
+- Do not read `dist/icons.json` whole: it is about 244 KB of path data. `keywords.json` (about 26 KB) has every name. `node_modules/@matita/icons/dist/llms.txt` is a short guide (also https://matita.dev/llms.txt), and `dist/llms-full.txt` adds keywords per glyph.
 - Use `<SketchIcon name="..." />` only when the name comes from data at run time. It loads the whole set; named imports do not.
 - Props: `size` (px, default 16), `color` (default `currentColor`), `strokeWidth` (default 1.6), `title` (accessible label). Icons without `title` are hidden from screen readers, so label icon-only buttons with `aria-label` on the button.
 - Set shared defaults once with `<SketchIconProvider size={20}>`. Do not set sizes icon by icon.
 - Optional: `import '@matita/icons/pencil.css'` once, for paper grain on the `pencil` variant and for `inline-block` / no-shrink defaults.
 - No `require()`: the package is ESM only. Plain SVG files are in `@matita/icons/icons/<name>.svg`, with a sprite at `@matita/icons/sprite.svg`.
 - Do not copy SVG paths into the code. Do not add fills: the icons are strokes.
-- In a Next.js App Router server component, import icons from a file marked `"use client"`.
+- The React and shadcn entries carry the `"use client"` directive, so an icon can be imported in a Next.js App Router server component and renders as a client component. Pass serializable props (numbers, strings), not functions.
 ```
 
-Per-tool notes are in [docs/ai-instructions.md](https://github.com/matita-dev/icons/blob/main/docs/ai-instructions.md). [matita.dev/llms.txt](https://matita.dev/llms.txt) is a short guide for assistants, and [matita.dev/icons.json](https://matita.dev/icons.json) lists every icon with the version that added it, so a tool can check a name exists instead of guessing. The names are also a typed union (`SketchIconName`) for TypeScript.
+Per-tool notes are in [docs/ai-instructions.md](https://github.com/matita-dev/icons/blob/main/docs/ai-instructions.md). The package ships `dist/llms.txt` (a short guide: when to use, imports, props, look-alike warnings, every glyph name) and `dist/llms-full.txt` (the same plus keywords per glyph and the alternate-name table, about 30 KB); import them as `@matita/icons/llms.txt` and `@matita/icons/llms-full.txt`. [matita.dev/llms.txt](https://matita.dev/llms.txt) serves the short guide on the web, and [matita.dev/icons.json](https://matita.dev/icons.json) lists every icon with the version that added it, so a tool can check a name exists instead of guessing. The names are also a typed union (`SketchIconName`) for TypeScript.
 
 ## Alternate names
 
