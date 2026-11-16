@@ -2,6 +2,11 @@
 
 Changes to `@matita/icons`. While the package is on 0.x, a minor version adds glyphs and a patch fixes things.
 
+## Unreleased
+
+- **CI:** the tests now also run against React 19 (the required `test` check is unchanged).
+- **Size budget:** `npm run size-check` fails CI if a single icon import grows. Measured today: `esm` entry 326 B minified (budget 400 B), `react` entry 4961 B (budget 6000 B); an alias costs the same as its glyph.
+
 ## 0.7.0 — 2026-11-16
 
 57 new glyphs (383 → 440), three glyphs redrawn, 102 alternate names, a shadcn/ui entry and AI-assistant docs.

@@ -87,6 +87,7 @@
     "lint:icons": "node scripts/lint.mjs",
     "release-check": "node scripts/release-check.mjs",
     "build": "node scripts/lint.mjs && node scripts/build.mjs",
+    "size-check": "node scripts/size-check.mjs",
     "test": "node --test",
     "prepublishOnly": "npm run build && npm test"
   },
