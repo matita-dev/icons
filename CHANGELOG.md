@@ -4,7 +4,7 @@ Changes to `@matita/icons`. While the package is on 0.x, a minor version adds gl
 
 ## 0.7.0 — 2026-11-16
 
-57 new glyphs (383 → 440), two glyphs redrawn, 102 alternate names, a shadcn/ui entry and AI-assistant docs.
+57 new glyphs (383 → 440), three glyphs redrawn, 102 alternate names, a shadcn/ui entry and AI-assistant docs.
 
 - **Arrows:** arrow-down-from-line, arrow-up-from-line, circle-arrow-left, corner-up-left, corner-up-right, forward, refresh-ccw, slash
 - **Dev tools:** bot, command, git-commit-vertical, square-terminal
@@ -14,7 +14,7 @@ Changes to `@matita/icons`. While the package is on 0.x, a minor version adds gl
 - **Mine:** brain-circuit, chart-pie-2, copy-plus
 - **Navigation and layout:** app-window, blocks, chevrons-up-down, columns-3, gallery-vertical-end, layout-dashboard, panels-top-left, square-centerline-dashed-horizontal, square-centerline-dashed-vertical
 - **Status and feedback:** archive-x, badge-check, circle-dashed, circle-fading-arrow-up, clock-2, mail-check, message-circle-question-mark, octagon-x, shield-exclamation-point, star-off
-- **Redrawn:** brain and matita have new drawings.
+- **Redrawn:** brain, matita and folder have new drawings.
 
 - **Alternate names:** 102 extra spellings that point at an existing glyph (`house` for `home`, `ellipsis` for `more-horizontal`, `circle-user` for `user-circle`, `x-circle` for `circle-x`, and more). Each is exported as `X` and `XIcon` from the main and React entries as a plain re-export of its glyph, accepted by `<SketchIcon name>` and the `SketchIconName` type, and listed in the new `ALIASES` export and the `aliases` field of `icons.json` and `keywords.json`. `APPROXIMATE_ALIASES` marks the ones where the glyph is the closest match. `names` and `icons` still hold the glyphs only.
 - **shadcn/ui entry:** `@matita/icons/shadcn` exports 166 React components named like the icon names the shadcn CLI writes into installed components (`ChevronDownIcon`, `Loader2Icon`, `BadgeCheck`, and more), each drawing a Matita glyph or alternate name. Fallback size 24, stroke 1.6, `currentColor`, `ref` forwarded, `className`, `data-*` and `aria-*` passed through, no CSS import. Tried in a Next.js app on the radix `nova` preset (accordion, sidebar, command, sonner, dropdown-menu, select, checkbox, pagination, calendar, breadcrumb). See "Use Matita in shadcn/ui" in the README.
