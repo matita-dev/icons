@@ -5,6 +5,8 @@ Changes to `@matita/icons`. While the package is on 0.x, a minor version adds gl
 ## Unreleased
 
 - **Right-to-left:** a `mirror` prop on the React icons draws the icon flipped horizontally, and `MIRROR` (and the `mirror` field of icons.json and keywords.json) lists the direction-aware glyphs. Default output is unchanged.
+- **CI:** the tests now also run against React 19 (the required `test` check is unchanged).
+- **Size budget:** `npm run size-check` fails CI if a single icon import grows. Measured today: `esm` entry 326 B minified (budget 400 B), `react` entry 4961 B (budget 6000 B); an alias costs the same as its glyph.
 
 ## 0.7.0 — 2026-11-16
 

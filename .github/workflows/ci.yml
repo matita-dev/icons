@@ -15,3 +15,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test
+      - run: npm run size-check
+      # Prove the peer range: run the same tests again against React 19.
+      - run: npm install --no-save react@19 react-dom@19
+      - run: npm test
