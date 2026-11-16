@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Pre-tag release check: package version, lockfile, top CHANGELOG heading and README set.png ?v= must agree.
+/* Pre-tag release check: package version, lockfile, top CHANGELOG heading must agree, and the README set.png ?v= too while the README shows that image.
    Usage: node scripts/release-check.mjs [package-dir]   (default: the icons/ folder this script lives in) */
 import { readFileSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
@@ -44,12 +44,11 @@ if (changelog !== null && version) {
   }
 }
 
-// README: set.png cache-busting query
+// README: set.png cache-busting query (only checked while the README shows the image)
 const readme = read('README.md');
 if (readme !== null && version) {
   const found = [...readme.matchAll(/set\.png\?v=([^\s)"'&]+)/g)].map(m => m[1]);
-  if (!found.length) fail('README.md: no set.png?v=<version> image URL found');
-  else for (const v of found) if (v !== version) fail(`README.md: set.png?v=${v} differs from package version ${version} (bump it after the site deploy, RELEASING.md step 13)`);
+  for (const v of found) if (v !== version) fail(`README.md: set.png?v=${v} differs from package version ${version} (bump it after the site deploy, RELEASING.md step 13)`);
 }
 
 if (failures.length) {
@@ -57,4 +56,4 @@ if (failures.length) {
   for (const f of failures) console.error(`  - ${f}`);
   process.exit(1);
 }
-console.log(`release-check OK: ${version} (package, lockfile, CHANGELOG, README ?v=)`);
+console.log(`release-check OK: ${version} (package, lockfile, CHANGELOG, README image if present)`);

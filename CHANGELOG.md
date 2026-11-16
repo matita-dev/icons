@@ -2,20 +2,19 @@
 
 Changes to `@matita/icons`. While the package is on 0.x, a minor version adds glyphs and a patch fixes things.
 
-## Unreleased
+## 0.7.0 — 2026-11-16
 
-57 new glyphs (383 → 440) and one redraw.
+57 new glyphs (383 → 440), two glyphs redrawn, 102 alternate names, a shadcn/ui entry and AI-assistant docs.
 
 - **Arrows:** arrow-down-from-line, arrow-up-from-line, circle-arrow-left, corner-up-left, corner-up-right, forward, refresh-ccw, slash
-- **Commerce:** building-complex, shopping-bag
 - **Dev tools:** bot, command, git-commit-vertical, square-terminal
-- **Everyday:** footprints, popcorn
+- **Everyday:** building-complex, footprints, popcorn, shopping-bag
 - **Forms and files:** captions, clipboard-paste, clipboard-paste-down, clipboard-paste-right, file-archive, file-archive-zip, file-chart-column, file-exclamation-point, file-search, folder-search, languages, list-filter, paintbrush, text-wrap
 - **Media:** audio-lines, audio-waveform, circle-stop, presentation, radio
 - **Mine:** brain-circuit, chart-pie-2, copy-plus
 - **Navigation and layout:** app-window, blocks, chevrons-up-down, columns-3, gallery-vertical-end, layout-dashboard, panels-top-left, square-centerline-dashed-horizontal, square-centerline-dashed-vertical
 - **Status and feedback:** archive-x, badge-check, circle-dashed, circle-fading-arrow-up, clock-2, mail-check, message-circle-question-mark, octagon-x, shield-exclamation-point, star-off
-- **Redrawn:** brain has a new drawing.
+- **Redrawn:** brain and matita have new drawings.
 
 - **Alternate names:** 102 extra spellings that point at an existing glyph (`house` for `home`, `ellipsis` for `more-horizontal`, `circle-user` for `user-circle`, `x-circle` for `circle-x`, and more). Each is exported as `X` and `XIcon` from the main and React entries as a plain re-export of its glyph, accepted by `<SketchIcon name>` and the `SketchIconName` type, and listed in the new `ALIASES` export and the `aliases` field of `icons.json` and `keywords.json`. `APPROXIMATE_ALIASES` marks the ones where the glyph is the closest match. `names` and `icons` still hold the glyphs only.
 - **shadcn/ui entry:** `@matita/icons/shadcn` exports 166 React components named like the icon names the shadcn CLI writes into installed components (`ChevronDownIcon`, `Loader2Icon`, `BadgeCheck`, and more), each drawing a Matita glyph or alternate name. Fallback size 24, stroke 1.6, `currentColor`, `ref` forwarded, `className`, `data-*` and `aria-*` passed through, no CSS import. Tried in a Next.js app on the radix `nova` preset (accordion, sidebar, command, sonner, dropdown-menu, select, checkbox, pagination, calendar, breadcrumb). See "Use Matita in shadcn/ui" in the README.
