@@ -112,7 +112,10 @@ export const ALIASES = {
 };
 
 /* Aliases whose glyph is the closest match but not the same drawing (a different arrowhead, tick size or bow shape),
-   so docs and tools can list them. A listed name must be a key of ALIASES. */
+   so docs and tools can list them. A listed name must be a key of ALIASES. Rule: an alias is listed when its name asks for
+   something the glyph does not draw (a -big tick, a -round head, a -minimal frame, a generic name such as grid or text that
+   could mean several drawings); a plain old or new spelling of the same drawing is not. Spellings of one meaning that
+   differ only by an old suffix (check-circle, check-circle-2) get the same answer, and a test keeps those groups together. */
 export const APPROXIMATE_ALIASES = [
   'bar-chart',
   'bar-chart-2',
@@ -123,12 +126,12 @@ export const APPROXIMATE_ALIASES = [
   'chart-no-axes-column',
   'chart-no-axes-column-decreasing',
   'chart-no-axes-column-increasing',
-  'check-circle',
-  'check-square',
   'circle-check-big',
+  'circle-user',
   'circle-user-round',
   'eighth-notes',
   'eye-closed',
+  'grid',
   'grid-2-x-2',
   'grid-2x2',
   'key-round',
@@ -147,6 +150,7 @@ export const APPROXIMATE_ALIASES = [
   'sparkle',
   'square-check-big',
   'table-2',
+  'text',
   'user-2',
   'user-check-2',
   'user-circle-2',

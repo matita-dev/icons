@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* Builds every distributable from src/defs.js:
-   dist/svg · dist/svg-pencil · dist/svg-exact · dist/sprite.svg · dist/icons.json · dist/esm · dist/react · dist/umd · dist/pencil.css
+   dist/llms.txt · dist/llms-full.txt · dist/svg · dist/svg-pencil · dist/svg-exact · dist/sprite.svg · dist/icons.json · dist/esm · dist/react · dist/umd · dist/pencil.css
    The matita.dev site is a separate project in site/ that builds from the published package. */
 import { mkdir, rm, writeFile, readFile, copyFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -10,12 +10,18 @@ import { KEYWORDS } from '../src/keywords.js';
 import { ALIASES, APPROXIMATE_ALIASES } from '../src/aliases.js';
 import { SHADCN_ICONS } from '../src/shadcn-names.js';
 import { toSvg, toSvgInner, pascal } from '../src/render.js';
+import { buildLlms, LIMITS } from './llms.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const src = p => join(root, 'src', p), dist = p => join(root, 'dist', p);
 const write = async (p, s) => { await mkdir(dirname(p), { recursive: true }); await writeFile(p, s); };
 const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
 const banner = `/*! ${pkg.name} v${pkg.version} · ${pkg.license} */\n`;
+/* Every module in dist/react starts with the directive. A bundler for React Server Components (Next.js App Router) treats a
+   'use client' module as a client boundary and hands the server a reference to it; without it the server would run
+   createContext and hooks and fail. Each file carries it, not just the entry, because a server import of index.js would
+   otherwise run the per-icon files on the server. The directive follows the banner comment, which is allowed. */
+const client = banner + "'use client';\n";
 
 const names = Object.keys(DEFS);
 const icons = Object.fromEntries(names.map(n => [n, drawIcon(n)]));
@@ -66,18 +72,18 @@ await write(dist('esm/index.js'), banner +
   `export const names = ${js(names)};\n`);
 
 /* React */
-await write(dist('react/base.js'), banner + await readFile(src('react/base.js'), 'utf8'));
-await write(dist('react/sketch-icon.js'), banner + await readFile(src('react/sketch-icon.js'), 'utf8'));
+await write(dist('react/base.js'), client + await readFile(src('react/base.js'), 'utf8'));
+await write(dist('react/sketch-icon.js'), client + await readFile(src('react/sketch-icon.js'), 'utf8'));
 for (const n of names) await write(dist(`react/icons/${n}.js`),
-  `import { createSketchIcon } from '../base.js';\nimport icon from '../../esm/icons/${n}.js';\nexport default /*#__PURE__*/createSketchIcon(icon);\n`);
-await write(dist('react/index.js'), banner +
+  client + `import { createSketchIcon } from '../base.js';\nimport icon from '../../esm/icons/${n}.js';\nexport default /*#__PURE__*/createSketchIcon(icon);\n`);
+await write(dist('react/index.js'), client +
   names.map(n => `export { default as ${pascal(n)}, default as ${pascal(n)}Icon } from './icons/${n}.js';`).join('\n') +
   `\n${aliasExports('./icons')}\nexport { SketchIconContext, SketchIconProvider, createSketchIcon } from './base.js';\nexport { SketchIcon } from './sketch-icon.js';\n`);
 
 /* shadcn entry: one component per name in src/shadcn-names.js, each drawing a glyph (or an alternate name's glyph) */
 const shadcnRows = Object.entries(SHADCN_ICONS).map(([e, t]) => [e, ALIASES[t] ?? t]);
-await write(dist('react/shadcn-base.js'), banner + await readFile(src('react/shadcn.js'), 'utf8'));
-await write(dist('react/shadcn.js'), banner + [
+await write(dist('react/shadcn-base.js'), client + await readFile(src('react/shadcn.js'), 'utf8'));
+await write(dist('react/shadcn.js'), client + [
   "import { createShadcnIcon } from './shadcn-base.js';",
   ...[...new Set(shadcnRows.map(r => r[1]))].map(g => `import ${pascal(g)}Data from '../esm/icons/${g}.js';`),
   ...shadcnRows.map(([e, g]) => `export const ${e} = /*#__PURE__*/createShadcnIcon(${pascal(g)}Data, '${e}');`)
@@ -171,6 +177,12 @@ await write(dist('react/shadcn.d.ts'), [
   "export type { SketchIconProps, SketchIconComponent } from './index.js';",
   ...shadcnRows.map(([e]) => `export declare const ${e}: SketchIconComponent;`)
 ].join('\n') + '\n');
+
+/* AI guide files. Same generator as the tests use (scripts/llms.mjs); sizes are capped so a long list cannot slip in. */
+const llms = buildLlms({ version: pkg.version, names, keywords: KEYWORDS, aliases: ALIASES, approximate: APPROXIMATE_ALIASES, shadcnCount: Object.keys(SHADCN_ICONS).length });
+await write(dist('llms.txt'), llms.short);
+await write(dist('llms-full.txt'), llms.full);
+if (Buffer.byteLength(llms.short) > LIMITS.short || Buffer.byteLength(llms.full) > LIMITS.full) throw new Error('llms.txt / llms-full.txt are over the size limit in scripts/llms.mjs');
 
 /* UMD / CDN build: window.SketchIcons */
 const esbuild = await import('esbuild');

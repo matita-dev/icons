@@ -228,7 +228,7 @@ test('alternate names: every alias points at a real glyph and never shadows one'
   }
   for (const a of lib.APPROXIMATE_ALIASES) assert.ok(a in lib.ALIASES, `${a}: approximate but not an alias`);
   assert.equal(new Set(lib.APPROXIMATE_ALIASES).size, lib.APPROXIMATE_ALIASES.length);
-  assert.ok(lib.APPROXIMATE_ALIASES.includes('check-circle') && lib.APPROXIMATE_ALIASES.includes('settings-2'));
+  assert.ok(lib.APPROXIMATE_ALIASES.includes('circle-check-big') && lib.APPROXIMATE_ALIASES.includes('settings-2'));
   assert.ok(!lib.APPROXIMATE_ALIASES.includes('house'));
   // names stay glyph-only; the reserved JSON field names are not glyphs
   assert.deepEqual(lib.names, Object.keys(DEFS));

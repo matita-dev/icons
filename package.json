@@ -64,6 +64,8 @@
     "./sprite.svg": "./dist/sprite.svg",
     "./icons.json": "./dist/icons.json",
     "./keywords.json": "./dist/keywords.json",
+    "./llms.txt": "./dist/llms.txt",
+    "./llms-full.txt": "./dist/llms-full.txt",
     "./pencil.css": "./dist/pencil.css",
     "./package.json": "./package.json"
   },
