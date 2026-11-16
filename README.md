@@ -1,4 +1,13 @@
-# Matita icons
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/matita-dev/icons/main/.github/brand/logo-light.svg">
+    <img src="https://raw.githubusercontent.com/matita-dev/icons/main/.github/brand/logo.svg" alt="Matita pencil icon" width="96" height="96">
+  </picture>
+</p>
+
+<h1 align="center">matita/icons</h1>
+
+<p align="center"><code>@matita/icons</code></p>
 
 Pencil-style icons for the web, drawn by code. Lines overshoot their ends like ruled pencil strokes, boxes cross at the corners, circles overlap where the pen closes, or stop just short. Every glyph is deterministic: the same name always draws the same way.
 
