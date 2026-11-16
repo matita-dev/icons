@@ -115,6 +115,17 @@ The full list is `ALIASES` (alternate name to glyph), also the `aliases` field o
 
 Two glyphs are drawn differently from what the same name suggests elsewhere, so check them before relying on a name: `chart-bar` is vertical bars on an axis (there is no alias for horizontal bars), and `loader` is a single open arc, which is what `loader-circle` and `loader-2` show too.
 
+## Right-to-left layouts
+
+Arrows, chevrons, undo and redo, sign in and out, sidebars and similar glyphs point the way you read. In a right-to-left layout (Arabic, Hebrew, Persian) pass `mirror` and the icon is drawn flipped horizontally:
+
+```jsx
+<ArrowRight mirror={isRtl} />
+<SketchIcon name="chevron-right" mirror={isRtl} />
+```
+
+`MIRROR` (also the `mirror` field of `icons.json` and `keywords.json`) lists the glyphs that want it; symmetric glyphs, media controls and refresh arrows are not on it. `mirror` works on any icon, so the list is advice, and without the prop nothing changes.
+
 ## Wobble: from sketch to exact shapes
 
 `wobble` goes from 1 (the default: the full hand) down to 0 (the same glyph as exact shapes: true lines, circles, arcs and square corners, no overshoot). In between you get a calmer hand.

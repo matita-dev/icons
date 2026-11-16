@@ -207,10 +207,11 @@ test('S draws one smooth line through its points: exact at wobble 0, a hand at 1
 
 test('every icon has search keywords, shipped as KEYWORDS and keywords.json', async () => {
   const json = JSON.parse(await readFile(new URL('../dist/keywords.json', import.meta.url), 'utf8'));
-  const { aliases, approximateAliases, ...perGlyph } = json;
+  const { aliases, approximateAliases, mirror, ...perGlyph } = json;
   assert.deepEqual(Object.keys(perGlyph), Object.keys(lib.KEYWORDS));
   assert.deepEqual(aliases, lib.ALIASES);
   assert.deepEqual(approximateAliases, lib.APPROXIMATE_ALIASES);
+  assert.deepEqual(mirror, lib.MIRROR);
   for (const n of lib.names) assert.ok(lib.KEYWORDS[n]?.length, `${n} has no keywords`);
   assert.ok(lib.KEYWORDS.trash.includes('bin'));
   assert.ok(lib.KEYWORDS.smile.includes('emoji'));
@@ -232,7 +233,7 @@ test('alternate names: every alias points at a real glyph and never shadows one'
   assert.ok(!lib.APPROXIMATE_ALIASES.includes('house'));
   // names stay glyph-only; the reserved JSON field names are not glyphs
   assert.deepEqual(lib.names, Object.keys(DEFS));
-  assert.ok(!lib.names.includes('aliases') && !lib.names.includes('approximateAliases'));
+  assert.ok(!lib.names.includes('aliases') && !lib.names.includes('approximateAliases') && !lib.names.includes('mirror'));
 });
 
 test('alternate names: X and XIcon exist in the main and React entries and draw the same as their glyph', () => {
@@ -258,7 +259,7 @@ test('alternate names: icons.json carries aliases and the exports match it', asy
   const json = JSON.parse(await readFile(new URL('../dist/icons.json', import.meta.url), 'utf8'));
   assert.deepEqual(json.aliases, lib.ALIASES);
   assert.deepEqual(json.approximateAliases, lib.APPROXIMATE_ALIASES);
-  assert.deepEqual(Object.keys(json).filter(k => k !== 'aliases' && k !== 'approximateAliases'), lib.names);
+  assert.deepEqual(Object.keys(json).filter(k => !['aliases', 'approximateAliases', 'mirror'].includes(k)), lib.names);
   for (const [alias, target] of Object.entries(json.aliases)) {
     assert.ok(json[target]?.ink, `${alias} -> ${target}`);
     assert.ok(!(alias in json), `${alias} is also a glyph entry`);
@@ -312,4 +313,25 @@ test('renderer: no inline display or flex, so utility classes win; a user style 
   assert.match(user, /flex:1 1 auto/);
   assert.match(user, /color:red/);
   assert.match(user, /overflow:visible/);
+});
+
+test('mirror: MIRROR lists direction-aware glyphs, shipped as MIRROR and the mirror field of icons.json', async () => {
+  const json = JSON.parse(await readFile(new URL('../dist/icons.json', import.meta.url), 'utf8'));
+  assert.deepEqual(json.mirror, lib.MIRROR);
+  assert.ok(lib.MIRROR.length > 20);
+  assert.equal(new Set(lib.MIRROR).size, lib.MIRROR.length, 'no repeats');
+  for (const n of lib.MIRROR) assert.ok(lib.names.includes(n), n + ' is a glyph');
+  for (const n of ['arrow-right', 'chevron-left', 'undo', 'log-in']) assert.ok(lib.MIRROR.includes(n), n);
+  for (const n of ['check', 'play', 'refresh-cw', 'arrow-up']) assert.ok(!lib.MIRROR.includes(n), n + ' is not direction-aware');
+});
+
+test('mirror: the prop draws the icon flipped horizontally, and the default output is unchanged', () => {
+  const plain = renderToStaticMarkup(h(R.ArrowRight));
+  assert.doesNotMatch(plain, /transform|<g/);
+  assert.equal(renderToStaticMarkup(h(R.ArrowRight, { mirror: false })), plain, 'mirror={false} is the default');
+  const flipped = renderToStaticMarkup(h(R.ArrowRight, { mirror: true }));
+  assert.match(flipped, /<g transform="translate\(24 0\) scale\(-1 1\)">/);
+  assert.doesNotMatch(flipped, /mirror=/, 'the prop is not passed to the svg');
+  assert.equal(flipped.replace(/<g transform="[^"]*">/, '').replace('</g>', ''), plain, 'same paths, only wrapped');
+  assert.match(renderToStaticMarkup(h(R.SketchIcon, { name: 'chevron-right', mirror: true })), /scale\(-1 1\)/);
 });

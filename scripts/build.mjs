@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { DEFS, drawIcon } from '../src/sketchify.js';
 import { KEYWORDS } from '../src/keywords.js';
 import { ALIASES, APPROXIMATE_ALIASES } from '../src/aliases.js';
+import { MIRROR } from '../src/mirror.js';
 import { SHADCN_ICONS } from '../src/shadcn-names.js';
 import { toSvg, toSvgInner, pascal } from '../src/render.js';
 import { buildLlms, LIMITS } from './llms.mjs';
@@ -49,14 +50,15 @@ await write(dist('sprite.svg'),
   `<svg xmlns="http://www.w3.org/2000/svg" style="display:none">\n` +
   names.map(n => `<symbol id="${n}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" overflow="visible">${toSvgInner(icons[n])}</symbol>`).join('\n') +
   `\n</svg>\n`);
-/* both JSON files are one entry per glyph, then two reserved fields: aliases (alternate name -> glyph) and approximateAliases */
-await write(dist('icons.json'), js({ ...icons, aliases: ALIASES, approximateAliases: APPROXIMATE_ALIASES }) + '\n');
-await write(dist('keywords.json'), js({ ...KEYWORDS, aliases: ALIASES, approximateAliases: APPROXIMATE_ALIASES }) + '\n');
+/* both JSON files are one entry per glyph, then three reserved fields: aliases (alternate name -> glyph), approximateAliases and mirror (direction-aware glyphs) */
+await write(dist('icons.json'), js({ ...icons, aliases: ALIASES, approximateAliases: APPROXIMATE_ALIASES, mirror: MIRROR }) + '\n');
+await write(dist('keywords.json'), js({ ...KEYWORDS, aliases: ALIASES, approximateAliases: APPROXIMATE_ALIASES, mirror: MIRROR }) + '\n');
 await copyFile(src('pencil.css'), dist('pencil.css'));
 
 /* ESM: engine, renderer, per-icon data, index */
 await write(dist('esm/defs.js'), banner + await readFile(src('defs.js'), 'utf8'));
 await write(dist('esm/aliases.js'), banner + await readFile(src('aliases.js'), 'utf8'));
+await write(dist('esm/mirror.js'), banner + await readFile(src('mirror.js'), 'utf8'));
 await write(dist('esm/keywords.js'), banner + await readFile(src('keywords.js'), 'utf8'));
 await write(dist('esm/random.js'), banner + await readFile(src('random.js'), 'utf8'));
 await write(dist('esm/pencil.js'), banner + await readFile(src('pencil.js'), 'utf8'));
@@ -68,7 +70,7 @@ await write(dist('esm/all.js'),
   `\nexport const icons = {\n${names.map((n, i) => `  ${js(n)}: i${i}`).join(',\n')}\n};\n`);
 await write(dist('esm/index.js'), banner +
   names.map(n => `export { default as ${pascal(n)}, default as ${pascal(n)}Icon } from './icons/${n}.js';`).join('\n') +
-  `\n${aliasExports('./icons')}\nexport { icons } from './all.js';\nexport { KEYWORDS } from './keywords.js';\nexport { ALIASES, APPROXIMATE_ALIASES } from './aliases.js';\nexport { DEFAULTS, iconPaths, iconAttrs, toSvg, toSvgInner, createElement, replaceIcons } from './render.js';\n` +
+  `\n${aliasExports('./icons')}\nexport { icons } from './all.js';\nexport { KEYWORDS } from './keywords.js';\nexport { ALIASES, APPROXIMATE_ALIASES } from './aliases.js';\nexport { MIRROR } from './mirror.js';\nexport { DEFAULTS, iconPaths, iconAttrs, toSvg, toSvgInner, createElement, replaceIcons } from './render.js';\n` +
   `export const names = ${js(names)};\n`);
 
 /* React */
@@ -128,6 +130,8 @@ export declare const KEYWORDS: Record<SketchGlyphName, string[]>;
 export declare const ALIASES: Record<SketchAliasName, SketchGlyphName>;
 /** Aliases whose glyph is the closest match rather than the same drawing */
 export declare const APPROXIMATE_ALIASES: SketchAliasName[];
+/** Glyphs whose meaning follows the reading direction; give their React component \`mirror\` in a right-to-left layout (also the \`mirror\` field of icons.json) */
+export declare const MIRROR: SketchGlyphName[];
 /** Glyph names only; alternate names are in ALIASES */
 export declare const names: SketchGlyphName[];
 ${names.map(n => `export declare const ${pascal(n)}: SketchIconData;\nexport declare const ${pascal(n)}Icon: SketchIconData;`).join('\n')}
@@ -159,6 +163,7 @@ export interface SketchIconProps extends Omit<React.SVGProps<SVGSVGElement>, 're
   /** pencil variant: every stroke drawn as two or three loose pencil lines (pair with pencil.css for the paper grain) */ pencil?: boolean;
   /** pencil texture, 0 (default) to 1: wider, looser lines and a coarser paper (with pencil.css). Shape is \`wobble\`'s job */ rough?: number;
   /** accessible label; omit for decorative icons */ title?: string;
+  /** draw the icon flipped horizontally, for right-to-left layouts (MIRROR lists the glyphs that want it) */ mirror?: boolean;
 }
 export type SketchIconComponent = React.ForwardRefExoticComponent<SketchIconProps & React.RefAttributes<SVGSVGElement>>;
 export declare const SketchIconContext: React.Context<Pick<SketchIconProps, 'size' | 'color' | 'strokeWidth' | 'pencil' | 'rough'>>;

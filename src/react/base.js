@@ -12,7 +12,7 @@ export function SketchIconProvider({ children, ...value }) {
 export function renderSketchIcon(icon, props, ref, ctx = {}) {
   const {
     size = ctx.size ?? 16, color = ctx.color ?? 'currentColor', strokeWidth, weight,
-    pencil = ctx.pencil ?? false, rough = ctx.rough ?? 0, title, className, style, children, ...rest
+    pencil = ctx.pencil ?? false, rough = ctx.rough ?? 0, title, mirror, className, style, children, ...rest
   } = props;
   const sw = strokeWidth ?? weight ?? ctx.strokeWidth ?? 1.6;
   const own = a11yAttrs(rest);
@@ -29,8 +29,10 @@ export function renderSketchIcon(icon, props, ref, ctx = {}) {
     style: { overflow: 'visible', ...style }
   },
   title ? h('title', null, title) : null,
-  iconPaths(icon, { strokeWidth: sw, pencil, rough }).map((p, i) =>
-    h('path', { key: i, d: p.d, strokeWidth: p['stroke-width'], strokeOpacity: p['stroke-opacity'] })),
+  /* mirror: the same paths in a group flipped across the middle of the 24 grid; without it the output is unchanged */
+  (paths => mirror ? h('g', { transform: 'translate(24 0) scale(-1 1)' }, paths) : paths)(
+    iconPaths(icon, { strokeWidth: sw, pencil, rough }).map((p, i) =>
+      h('path', { key: i, d: p.d, strokeWidth: p['stroke-width'], strokeOpacity: p['stroke-opacity'] }))),
   children);
 }
 
