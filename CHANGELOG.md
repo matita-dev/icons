@@ -2,6 +2,10 @@
 
 Changes to `@matita/icons`. While the package is on 0.x, a minor version adds glyphs and a patch fixes things.
 
+## Unreleased
+
+- **Right-to-left:** a `mirror` prop on the React icons draws the icon flipped horizontally, and `MIRROR` (and the `mirror` field of icons.json and keywords.json) lists the direction-aware glyphs. Default output is unchanged.
+
 ## 0.7.0 — 2026-11-16
 
 57 new glyphs (383 → 440), three glyphs redrawn, 102 alternate names, a shadcn/ui entry and AI-assistant docs.

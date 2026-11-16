@@ -3,6 +3,7 @@
 import { DEFS } from '../src/defs.js';
 import { KEYWORDS } from '../src/keywords.js';
 import { ALIASES, APPROXIMATE_ALIASES } from '../src/aliases.js';
+import { MIRROR } from '../src/mirror.js';
 import { SHADCN_ICONS } from '../src/shadcn-names.js';
 import { drawIcon } from '../src/sketchify.js';
 
@@ -51,9 +52,13 @@ for (const [a, target] of Object.entries(ALIASES)) {
   if (taken) errors.push(`alias ${a}: export name ${pascalOf(a)} is already used by ${taken}`);
   exportNames.set(pascalOf(a), a);
 }
-for (const reserved of ['aliases', 'approximateAliases']) if (DEFS[reserved]) errors.push(`${reserved}: reserved for the JSON files, not a glyph name`);
+for (const reserved of ['aliases', 'approximateAliases', 'mirror']) if (DEFS[reserved]) errors.push(`${reserved}: reserved for the JSON files, not a glyph name`);
 for (const a of APPROXIMATE_ALIASES) if (!ALIASES[a]) errors.push(`approximate alias "${a}" is not in ALIASES`);
 if (new Set(APPROXIMATE_ALIASES).size !== APPROXIMATE_ALIASES.length) errors.push('APPROXIMATE_ALIASES: repeated name');
+
+/* mirror: every entry is a glyph, listed once */
+for (const m of MIRROR) if (!DEFS[m]) errors.push(`mirror: "${m}" is not a glyph`);
+if (new Set(MIRROR).size !== MIRROR.length) errors.push('MIRROR: repeated name');
 
 /* shadcn entry: every export draws a real glyph or alternate name, spelled like a component. Component libraries match
    icons with [class*='size-'], and every icon carries the class sketch-icon-<name>, so no name may contain "size-". */
