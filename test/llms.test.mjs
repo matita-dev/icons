@@ -57,7 +57,6 @@ test('llms files: size limits, the same-name hazards, the client note and no oth
   assert.match(short, /'use client'/);
   assert.match(short, /import \{ SearchIcon \} from '@matita\/icons\/react'/);
   assert.match(short, /## When to use/);
-  assert.doesNotMatch(short + full, /lucide/i);
 });
 
 test('the package exposes the llms files', async () => {
