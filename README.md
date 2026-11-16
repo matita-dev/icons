@@ -1,12 +1,19 @@
-# Matita icons
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/matita-dev/icons/main/.github/brand/logo-light.svg">
+    <img src="https://raw.githubusercontent.com/matita-dev/icons/main/.github/brand/logo.svg" alt="Matita pencil icon" width="96" height="96">
+  </picture>
+</p>
+
+<h1 align="center">matita/icons</h1>
+
+<p align="center"><code>@matita/icons</code></p>
 
 Pencil-style icons for the web, drawn by code. Lines overshoot their ends like ruled pencil strokes, boxes cross at the corners, circles overlap where the pen closes, or stop just short. Every glyph is deterministic: the same name always draws the same way.
 
-[![All Matita icons on graph paper](https://matita.dev/set.png?v=0.5.1)](https://matita.dev)
-
 Browse, search and copy them at [matita.dev](https://matita.dev).
 
-- 383 glyphs · 24 grid · 1.6 stroke · `currentColor`
+- 440 glyphs · 24 grid · 1.6 stroke · `currentColor`
 - Plain, descriptive kebab-case names (`arrow-right`, `trash-2`, `circle-check`)
 - Stroke-based, so color and stroke width stay yours to change
 - Pencil variant: every stroke drawn as two or three loose pencil lines, with paper grain
