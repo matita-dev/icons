@@ -12,10 +12,23 @@ const exportsList = Object.keys(SHADCN_ICONS);
 const render = (C, props) => renderToStaticMarkup(h(C, props));
 
 test('shadcn entry exports every name in the list and nothing else', () => {
-  assert.equal(exportsList.length, 166);
-  assert.equal(exportsList.filter(e => e.endsWith('Icon')).length, 161);
-  assert.deepEqual(exportsList.filter(e => !e.endsWith('Icon')).sort(), ['BadgeCheck', 'BookOpen', 'LifeBuoy', 'Send', 'VolumeX']);
+  const withIcon = exportsList.filter(e => e.endsWith('Icon'));
+  assert.equal(withIcon.length, 168);
+  // every XIcon is also exported as bare X, for the styles that import the bare name; the bare-only rows stay as they were
+  assert.deepEqual(exportsList.filter(e => !e.endsWith('Icon') && !SHADCN_ICONS[e + 'Icon']).sort(), ['BadgeCheck', 'BookOpen', 'LifeBuoy', 'Send', 'VolumeX'].filter(e => !SHADCN_ICONS[e + 'Icon']));
+  for (const e of withIcon) assert.ok(S[e.slice(0, -4)], `${e.slice(0, -4)} (bare) exists`);
+  assert.equal(exportsList.length, 337);
   assert.deepEqual(Object.keys(S).sort(), [...exportsList].sort());
+});
+
+test('shadcn entry: the bare names the new-york and legacy styles import resolve and draw the same as the XIcon name', () => {
+  // names collected from the registry components of those styles; an alias to this entry must find every one
+  const bare = ['ArrowLeft', 'ArrowRight', 'Check', 'ChevronDown', 'ChevronLeft', 'ChevronRight', 'ChevronUp', 'Circle', 'CircleCheck',
+    'GripVertical', 'Info', 'LoaderCircle', 'Minus', 'MoreHorizontal', 'OctagonX', 'PanelLeft', 'Search', 'TriangleAlert', 'X'];
+  for (const n of bare) {
+    assert.equal(typeof S[n], 'object', n);
+    assert.equal(render(S[n], {}).replace(/sketch-icon-[a-z0-9-]+/, ''), render(S[n + 'Icon'], {}).replace(/sketch-icon-[a-z0-9-]+/, ''), n);
+  }
 });
 
 test('every shadcn export is a real component that draws its glyph', () => {
@@ -77,6 +90,6 @@ test('the package exposes ./shadcn and keeps it free of side effects', async () 
   assert.deepEqual(pkg.sideEffects, ['*.css']);
   const js = await readFile(new URL('../dist/react/shadcn.js', import.meta.url), 'utf8');
   assert.doesNotMatch(js, /\.css/);
-  assert.equal((js.match(/\/\*#__PURE__\*\//g) || []).length, 166);
+  assert.equal((js.match(/\/\*#__PURE__\*\//g) || []).length, exportsList.length);
   assert.match(await readFile(new URL('../dist/react/shadcn.d.ts', import.meta.url), 'utf8'), /export declare const AlertTriangleIcon: SketchIconComponent;/);
 });

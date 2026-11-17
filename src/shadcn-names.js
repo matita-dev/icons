@@ -167,5 +167,20 @@ export const SHADCN_ICONS = {
   WrapTextIcon: 'text-wrap',
   XIcon: 'x',
   ZoomInIcon: 'zoom-in',
-  ZoomOutIcon: 'zoom-out'
+  ZoomOutIcon: 'zoom-out',
+  CircleIcon: 'circle',
+  LoaderCircleIcon: 'loader',
+  /* names the shadcn blocks (sidebar-07, sidebar-10, sidebar-16 and others) import */
+  AudioWaveformIcon: 'audio-waveform',
+  ForwardIcon: 'forward',
+  LineChartIcon: 'line-chart',
+  SidebarIcon: 'sidebar',
+  SquareTerminalIcon: 'square-terminal'
 };
+
+/* The newer styles write `XIcon` names; the new-york and legacy styles import the bare name (`X`, `Check`, `ChevronDown`)
+   straight from their icon package, which is what the bundler alias stop-gap in the README redirects here. So every
+   `XIcon` row is also exported as `X`, unless a bare row above already says otherwise. */
+for (const [name, glyph] of Object.entries(SHADCN_ICONS)) {
+  if (name.endsWith('Icon') && name.length > 4) SHADCN_ICONS[name.slice(0, -4)] ??= glyph;
+}
