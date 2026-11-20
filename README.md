@@ -96,7 +96,7 @@ This project uses `@matita/icons` (ESM only, 24 grid, `currentColor`).
 - Props: `size` (px, default 16), `color` (default `currentColor`), `strokeWidth` (default 1.6), `title` (accessible label). Icons without `title` are hidden from screen readers, so label icon-only buttons with `aria-label` on the button.
 - Set shared defaults once with `<SketchIconProvider size={20}>`. Do not set sizes icon by icon.
 - Optional: `import '@matita/icons/pencil.css'` once, for paper grain on the `pencil` variant and for `inline-block` / no-shrink defaults.
-- No `require()`: the package is ESM only. Plain SVG files are in `@matita/icons/icons/<name>.svg`, with a sprite at `@matita/icons/sprite.svg`.
+- ESM only, no CommonJS build. `require()` of the package works on Node 20.19+ and 22.12+ (older Node needs `import`). Jest's default setup does not transform `node_modules`, so a CommonJS Jest project fails with `Unexpected token 'export'`: run Jest in ESM mode, or transform the package with a project-wide Babel config (`babel.config.json` with a preset such as `@babel/preset-env`; a `.babelrc` does not reach `node_modules`) plus `transformIgnorePatterns: ['/node_modules/(?!@matita/)']`. Plain SVG files are in `@matita/icons/icons/<name>.svg`, with a sprite at `@matita/icons/sprite.svg`.
 - Do not copy SVG paths into the code. Do not add fills: the icons are strokes.
 - The React and shadcn entries carry the `"use client"` directive, so an icon can be imported in a Next.js App Router server component and renders as a client component. Pass serializable props (numbers, strings), not functions.
 ```

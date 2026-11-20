@@ -4,6 +4,7 @@ Changes to `@matita/icons`. While the package is on 0.x, a minor version adds gl
 
 ## Unreleased
 
+- **Docs:** the package stays ESM only (decided for 0.8.0); the README now says `require()` works on Node 20.19+ and 22.12+ and how to use it with Jest.
 - **shadcn/ui entry:** every `XIcon` component is also exported as the bare `X` (`Check`, `ChevronDown`, `X`, ...), so the bundler alias for the new-york and legacy styles finds every name; added `CircleIcon`, `LoaderCircleIcon`, `AudioWaveformIcon`, `ForwardIcon`, `LineChartIcon`, `SidebarIcon` and `SquareTerminalIcon` for the blocks. 166 components became 337.
 - **Right-to-left:** a `mirror` prop on the React icons draws the icon flipped horizontally, and `MIRROR` (and the `mirror` field of icons.json and keywords.json) lists the direction-aware glyphs. Default output is unchanged.
 - **CI:** the tests now also run against React 19 (the required `test` check is unchanged).

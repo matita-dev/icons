@@ -30,7 +30,7 @@ Use Matita when the project already imports \`@matita/icons\`, or when the user 
 
 ## Install and import
 
-- Install: \`npm i @matita/icons\`. ESM only, no \`require()\`.
+- Install: \`npm i @matita/icons\`. ESM only, no CommonJS build (\`require()\` works on Node 20.19+ and 22.12+).
 - Import named components, so a bundler keeps only the icons you use:
 
 \`\`\`tsx
