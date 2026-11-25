@@ -4,6 +4,7 @@ Changes to `@matita/icons`. While the package is on 0.x, a minor version adds gl
 
 ## Unreleased
 
+- **New glyphs:** `bookmark-check`, `calendar-x` and `filter-x` (community requests #57, #58 and #59, drawn in #64). 440 → 443.
 - **Docs:** the package stays ESM only (decided for 0.8.0); the README now says `require()` works on Node 20.19+ and 22.12+ and how to use it with Jest.
 - **Alternate names:** 25 more old numbered and `-round` spellings that point at an existing glyph (`file-code-2`, `layers-2`, `share-2`, `undo-2`, `music-3`, and more; 102 → 127). `chart-bar-big` and `flask-round` are listed in `APPROXIMATE_ALIASES`. Names that draw something different (`*-dashed`, `circle-small`, `clock-1`, `repeat-1`) are not aliases and come as glyphs.
 - **shadcn/ui entry:** every `XIcon` component is also exported as the bare `X` (`Check`, `ChevronDown`, `X`, ...), so the bundler alias for the new-york and legacy styles finds every name; added `CircleIcon`, `LoaderCircleIcon`, `AudioWaveformIcon`, `ForwardIcon`, `LineChartIcon`, `SidebarIcon` and `SquareTerminalIcon` for the blocks. 166 components became 337.
